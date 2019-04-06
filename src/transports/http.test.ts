@@ -3,11 +3,21 @@ import { parse } from "@open-rpc/schema-utils-js";
 import { Router } from "../router";
 import { HTTPServerTransport } from "./http";
 import fetch from "node-fetch";
+import cors from "cors";
+import { json as jsonParser } from "body-parser";
+import { HandleFunction } from "connect";
 
 describe("http transport", () => {
   it("can start an http server that works", async () => {
     const simpleMathExample = await parse(JSON.stringify(examples.simpleMath));
-    const httpTransport = new HTTPServerTransport({ port: 9696 });
+    const corsOptions = { origin: "*" } as cors.CorsOptions;
+    const httpTransport = new HTTPServerTransport({
+      middleware: [
+        cors(corsOptions) as HandleFunction,
+        jsonParser(),
+      ],
+      port: 9696,
+    });
 
     const router = new Router(simpleMathExample, { mockMode: true });
 
