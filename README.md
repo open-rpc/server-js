@@ -21,7 +21,7 @@ Inspired by [mole-rpc](https://github.com/koorchik/node-mole-rpc), built for Ope
 #### Install
 
 ```bash
-npm install -g @open-rpc/server-node
+npm install -g @open-rpc/server-js
 ```
 
 #### Setup handlers for AutoRouter
