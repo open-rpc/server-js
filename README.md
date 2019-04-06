@@ -36,13 +36,7 @@ $ cat open-rpc-server.json
     "HTTPSServerTransportOptions",
     "WebSocketServerTransportOptions",
     "IPCServerTranportOptions"
-  ],
-  "transportOptions": {
-    "HTTPServerTransportOptions": { "port": 8080 }
-    "HTTPSServerTransportOptions": { "port": 8081 }
-    "WebSocketServerTransportOptions": { "port": 8082 },
-    "IPCServerTranportOptions": { "port": 8083 }
-  }
+  ]
 }
 ```
 
