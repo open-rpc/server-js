@@ -46,7 +46,7 @@ $ cat open-rpc-server.json
 $ open-rpc-server-js \
   -g \
   -s https://raw.githubusercontent.com/open-rpc/examples/master/service-descriptions/simple-math-openrpc.json
-Server project initialized!
+OpenRPC Server project initialized!
 
 $ ls ./method-handlers
 1.0.0
