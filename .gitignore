@@ -1,0 +1,9 @@
+**/node_modules
+**/build
+**/coverage
+**/docs
+**/.idea
+coverage
+docs
+.DS_Store
+test

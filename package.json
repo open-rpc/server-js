@@ -1,0 +1,58 @@
+{
+  "name": "@open-rpc/server-js",
+  "private": false,
+  "version": "1.0.0",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/open-rpc/server-js.git"
+  },
+  "main": "./build/index.js",
+  "bin": {
+    "open-rpc-generator-client": "./build/cli.js"
+  },
+  "files": [
+    "bin/*.js",
+    "build",
+    ".node-version"
+  ],
+  "scripts": {
+    "start": "./build/cli.js",
+    "test": "jest --coverage",
+    "build": "tsc",
+    "watch:build": "tsc --watch",
+    "watch:test": "jest --watch",
+    "publish": "npm run build"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@open-rpc/meta-schema": "^1.2.2",
+    "@open-rpc/schema-utils-js": "^1.5.1",
+    "@types/ws": "^6.0.1",
+    "body-parser": "^1.18.3",
+    "commander": "^2.19.0",
+    "connect": "^3.6.6",
+    "cors": "^2.8.5",
+    "json-schema-faker": "^0.5.0-rc16",
+    "lodash": "^4.17.11",
+    "node-ipc": "^9.1.1",
+    "ws": "^6.2.1"
+  },
+  "devDependencies": {
+    "@open-rpc/examples": "^1.2.5",
+    "@types/body-parser": "^1.17.0",
+    "@types/connect": "^3.4.32",
+    "@types/cors": "^2.8.4",
+    "@types/fs-extra": "^5.0.5",
+    "@types/jest": "^24.0.11",
+    "@types/lodash": "^4.14.123",
+    "@types/node": "^11.13.0",
+    "@types/node-fetch": "^2.3.0",
+    "@types/node-ipc": "^9.1.1",
+    "jest": "^24.5.0",
+    "node-fetch": "^2.3.0",
+    "ts-jest": "^24.0.0",
+    "typescript": "^3.3.3333"
+  }
+}
