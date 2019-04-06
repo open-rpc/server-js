@@ -11,8 +11,8 @@ Inspired by [mole-rpc](https://github.com/koorchik/node-mole-rpc), built for Ope
    - [x] HTTPS1/2
    - [x] WebSockets
    - [x] IPC
- - [x] Automatically Validate JSON Schemas for [ContentDescriptor#schemas](https://spec.open-rpc.org/#content-descriptor-schema) [MethodObject#params](https://spec.open-rpc.org/#method-result).
- - [x] Automatic testing against [MethodObject#examplePairings](https://spec.open-rpc.org/#method-example-pairings).
+ - [x] Automatically validate JSON Schemas for [ContentDescriptor#schemas](https://spec.open-rpc.org/#content-descriptor-schema) [MethodObject#params](https://spec.open-rpc.org/#method-result).
+ - [x] Automatically validate against [MethodObject#examplePairings](https://spec.open-rpc.org/#method-example-pairings).
 
 ## How to Use
 
