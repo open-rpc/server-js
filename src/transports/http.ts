@@ -18,7 +18,6 @@ export class HTTPServerTransport extends ServerTransport {
 
     app.use(cors(corsOptions) as HandleFunction);
     app.use(jsonParser());
-
     app.use(this.httpRouterHandler.bind(this) as HandleFunction);
 
     this.server = http.createServer(app);
@@ -30,6 +29,7 @@ export class HTTPServerTransport extends ServerTransport {
 
   private async httpRouterHandler(req: any, res: any) {
     const result = await this.routerHandler(req.body.id, req.body.method, req.body.params);
+    res.setHeader("Content-Type", "application/json");
     res.end(JSON.stringify(result));
   }
 }
