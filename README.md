@@ -83,7 +83,7 @@ Thats it!
 #### Install
 
 ```bash
-npm install --save @open-rpc/server-node
+npm install --save @open-rpc/server-js
 ```
 
 #### Creating Routers
