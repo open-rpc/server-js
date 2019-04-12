@@ -1,5 +1,5 @@
 import examples from "@open-rpc/examples";
-import { parse } from "@open-rpc/schema-utils-js";
+import { parseOpenRPCDocument } from "@open-rpc/schema-utils-js";
 import { Router } from "../router";
 import * as fs from "fs";
 import { promisify } from "util";
@@ -9,13 +9,13 @@ import ipc from "node-ipc";
 
 describe("IPC transport", () => {
   it("can start an IPC server that works", async (done) => {
-    const simpleMathExample = await parse(JSON.stringify(examples.simpleMath));
+    const simpleMathExample = await parseOpenRPCDocument(examples.simpleMath);
 
     const ipcTransport = new IpcServerTransport({
       id: "simpleMath",
+      ipv6: false,
       port: 9699,
       udp: false,
-      ipv6: false,
     });
     const router = new Router(simpleMathExample, { mockMode: true });
     ipcTransport.addRouter(router);

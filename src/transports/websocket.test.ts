@@ -1,5 +1,5 @@
 import examples from "@open-rpc/examples";
-import { parse } from "@open-rpc/schema-utils-js";
+import { parseOpenRPCDocument } from "@open-rpc/schema-utils-js";
 import { Router } from "../router";
 import * as fs from "fs";
 import { promisify } from "util";
@@ -12,7 +12,7 @@ const agent = new https.Agent({ rejectUnauthorized: false });
 
 describe("WebSocket transport", () => {
   it("can start an https server that works", async (done) => {
-    const simpleMathExample = await parse(JSON.stringify(examples.simpleMath));
+    const simpleMathExample = await parseOpenRPCDocument(examples.simpleMath);
 
     const webSocketTransport = new WebSocketServerTransport({
       cert: await readFile(`${process.cwd()}/test-cert/server.cert`),

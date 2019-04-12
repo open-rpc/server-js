@@ -7,10 +7,12 @@ Inspired by [mole-rpc](https://github.com/koorchik/node-mole-rpc), built for Ope
 ## Features
 
  - [x] Multiple Transports
-   - [x] HTTP1/2
+   - [x] HTTP
    - [x] HTTPS1/2
    - [x] WebSockets
    - [x] IPC
+     - [x] UDP
+     - [x] TCP
  - [x] Automatically Validate JSON Schemas for [ContentDescriptor#schemas](https://spec.open-rpc.org/#content-descriptor-schema) [MethodObject#params](https://spec.open-rpc.org/#method-result).
  - [x] Automatic testing against [MethodObject#examplePairings](https://spec.open-rpc.org/#method-example-pairings).
 
@@ -24,18 +26,38 @@ Inspired by [mole-rpc](https://github.com/koorchik/node-mole-rpc), built for Ope
 npm install -g @open-rpc/server-js
 ```
 
-#### Setup handlers for AutoRouter
+#### Init
 
 ```bash
-mkdir ./method-handlers
-echo "export default (a, b) => a - b;" > ./method-handlers/subtraction.js
-echo "export default (a, b) => a + b;" > ./method-handlers/addition.js
+$ open-rpc-server-js init
+
+$ cat open-rpc-server.json
+{
+  "transports": [
+    "HTTPServerTransport",
+    "HTTPSServerTransport",
+    "WebSocketServerTransport",
+    "IPCServerTranport"
+  ]
+}
 ```
 
-#### Setup simple confg file
+#### Generate new api version scaffolding
 
 ```bash
-echo "{ \"transportOptions\": { \"HTTPServerTransportOptions\": { \"port\": 8080 } } }" > open-rpc-server.config.json
+$ open-rpc-server-js \
+  -g \
+  -s https://raw.githubusercontent.com/open-rpc/examples/master/service-descriptions/simple-math-openrpc.json
+OpenRPC Server project initialized!
+
+$ ls ./method-handlers
+1.0.0
+
+$ ls ./method-handlers/1.0.0
+addition.js      subtraction.ts
+
+$ cat ./method-handlers/1.0.0/addition.js
+export default (a: number, b: number): Promise<number> => {}
 ```
 
 #### Start the server
@@ -48,12 +70,14 @@ open-rpc-server-js \
 
 Thats it!
 
+---
+
 ### Javascript/Typescript API
 
 #### Install
 
 ```bash
-npm install -g @open-rpc/server-node
+npm install --save @open-rpc/server-js
 ```
 
 #### Creating Routers

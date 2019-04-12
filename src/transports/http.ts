@@ -1,12 +1,13 @@
 import cors from "cors";
 import { json as jsonParser } from "body-parser";
 import connect, { HandleFunction } from "connect";
-import http from "http";
+import http, { ServerOptions } from "http";
 import { ServerTransport } from "./server-transport";
 
-interface IHTTPServerTransportOptions {
+type IHTTPServerTransportOptions = {
+  middleware: HandleFunction[],
   port: number;
-}
+} & ServerOptions;
 
 export class HTTPServerTransport extends ServerTransport {
   private server: http.Server;
@@ -14,10 +15,8 @@ export class HTTPServerTransport extends ServerTransport {
   constructor(private options: IHTTPServerTransportOptions) {
     super();
     const app = connect();
-    const corsOptions = { origin: "*" } as cors.CorsOptions;
 
-    app.use(cors(corsOptions) as HandleFunction);
-    app.use(jsonParser());
+    this.options.middleware.forEach((mw) => app.use(mw));
 
     app.use(this.httpRouterHandler.bind(this) as HandleFunction);
 
@@ -30,6 +29,7 @@ export class HTTPServerTransport extends ServerTransport {
 
   private async httpRouterHandler(req: any, res: any) {
     const result = await this.routerHandler(req.body.id, req.body.method, req.body.params);
+    res.setHeader("Content-Type", "application/json");
     res.end(JSON.stringify(result));
   }
 }

@@ -8,6 +8,10 @@ export abstract class ServerTransport {
     this.routers.push(router);
   }
 
+  public removeRouter(router: Router) {
+    this.routers = _.without(this.routers, router);
+  }
+
   protected async routerHandler(id: string | number, methodName: string, params: any[]) {
     if (this.routers.length === 0) {
       console.warn("transport method called without a router configured.");

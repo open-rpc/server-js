@@ -1,6 +1,12 @@
-import { MethodCallValidator } from "@open-rpc/schema-utils-js";
-import { types } from "@open-rpc/meta-schema";
 import _ from "lodash";
+import {
+  ExamplePairingObject,
+  MethodObject,
+  ExampleObject,
+  ContentDescriptorObject,
+  OpenRPC,
+} from "@open-rpc/meta-schema";
+import { MethodCallValidator } from "@open-rpc/schema-utils-js";
 const jsf = require("json-schema-faker"); // tslint:disable-line
 
 export interface IMethodMapping {
@@ -28,7 +34,7 @@ export class Router {
   private methodCallValidator: MethodCallValidator;
 
   constructor(
-    private openrpcDocument: types.OpenRPC,
+    private openrpcDocument: OpenRPC,
     methodMapping: IMethodMapping | IMockModeSettings,
   ) {
     if (methodMapping.mockMode) {
@@ -62,19 +68,19 @@ export class Router {
     return this.methods[methodName] !== undefined;
   }
 
-  private buildMockMethodMapping(methods: types.MethodObject[]): IMethodMapping {
+  private buildMockMethodMapping(methods: MethodObject[]): IMethodMapping {
     return _.chain(methods)
       .keyBy("name")
-      .mapValues((methodObject: types.MethodObject) => async (...args: any): Promise<any> => {
+      .mapValues((methodObject: MethodObject) => async (...args: any): Promise<any> => {
         const foundExample = _.find(
-          methodObject.examples as types.ExamplePairingObject[],
+          methodObject.examples as ExamplePairingObject[],
           ({ params }) => _.isMatch(_.map(params, "value"), args),
         );
         if (foundExample) {
-          const foundExampleResult = foundExample.result as types.ExampleObject;
+          const foundExampleResult = foundExample.result as ExampleObject;
           return Promise.resolve({ result: foundExampleResult.value });
         } else {
-          const result = methodObject.result as types.ContentDescriptorObject;
+          const result = methodObject.result as ContentDescriptorObject;
           return { result: await jsf.generate(result.schema) };
         }
       })
