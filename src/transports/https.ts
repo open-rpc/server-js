@@ -5,7 +5,7 @@ import http2, { ServerOptions, Http2SecureServer, SecureServerOptions } from "ht
 import { ServerTransport } from "./server-transport";
 import { IncomingMessage } from "http";
 
-type IHTTPSServerTransportOptions = {
+export type IHTTPSServerTransportOptions = {
   middleware: HandleFunction[],
   port: number,
   allowHTTP1?: boolean,

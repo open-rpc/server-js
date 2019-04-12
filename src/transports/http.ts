@@ -4,7 +4,7 @@ import connect, { HandleFunction } from "connect";
 import http, { ServerOptions } from "http";
 import { ServerTransport } from "./server-transport";
 
-type IHTTPServerTransportOptions = {
+export type IHTTPServerTransportOptions = {
   middleware: HandleFunction[],
   port: number;
 } & ServerOptions;

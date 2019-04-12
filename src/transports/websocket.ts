@@ -7,7 +7,7 @@ import { IncomingMessage } from "http";
 import WebSocket from "ws";
 import { Server } from "https";
 
-type IWebSocketServerTransportOptions = {
+export type IWebSocketServerTransportOptions = {
   middleware: HandleFunction[],
   port: number,
   allowHTTP1?: boolean,

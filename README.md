@@ -109,7 +109,7 @@ const openrpcDocument = {
 } as types.OpenRPC;
 
 const methodHandlerMapping = {
-  addition: (a: number, b: number) => a + b
+  addition: (a: number, b: number) => Promise.resolve(a + b)
 };
 
 const router = new Router(openrpcDocument, methodHandlerMapping);
