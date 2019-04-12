@@ -1,5 +1,5 @@
 import examples from "@open-rpc/examples";
-import { parse } from "@open-rpc/schema-utils-js";
+import { parseOpenRPCDocument } from "@open-rpc/schema-utils-js";
 import { Router } from "../router";
 import { HTTPServerTransport } from "./http";
 import fetch from "node-fetch";
@@ -9,7 +9,7 @@ import { HandleFunction } from "connect";
 
 describe("http transport", () => {
   it("can start an http server that works", async () => {
-    const simpleMathExample = await parse(JSON.stringify(examples.simpleMath));
+    const simpleMathExample = await parseOpenRPCDocument(examples.simpleMath);
     const corsOptions = { origin: "*" } as cors.CorsOptions;
     const httpTransport = new HTTPServerTransport({
       middleware: [

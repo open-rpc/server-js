@@ -1,23 +1,29 @@
 import { Router, IMethodMapping } from "./router";
 import examples from "@open-rpc/examples";
 import _ from "lodash";
-import { parse } from "@open-rpc/schema-utils-js";
-import { types } from "@open-rpc/meta-schema";
+import { parseOpenRPCDocument } from "@open-rpc/schema-utils-js";
+import {
+  OpenRPC,
+  ContentDescriptorObject,
+  ExampleObject,
+  ExamplePairingObject,
+  MethodObject,
+} from "@open-rpc/meta-schema";
 const jsf = require("json-schema-faker"); // tslint:disable-line
 
-const makeMethodMapping = (methods: types.MethodObject[]): IMethodMapping => {
+const makeMethodMapping = (methods: MethodObject[]): IMethodMapping => {
   return _.chain(methods)
     .keyBy("name")
-    .mapValues((methodObject: types.MethodObject) => async (...args: any): Promise<any> => {
+    .mapValues((methodObject: MethodObject) => async (...args: any): Promise<any> => {
       const foundExample = _.find(
-        methodObject.examples as types.ExamplePairingObject[],
-        ({ params }) => _.isMatch(_.map(params, "value"), args),
+        methodObject.examples as ExamplePairingObject[],
+        ({ params }: ExamplePairingObject) => _.isMatch(_.map(params, "value"), args),
       );
       if (foundExample) {
-        const foundExampleResult = foundExample.result as types.ExampleObject;
+        const foundExampleResult = foundExample.result as ExampleObject;
         return Promise.resolve({ result: foundExampleResult.value });
       } else {
-        const result = methodObject.result as types.ContentDescriptorObject;
+        const result = methodObject.result as ContentDescriptorObject;
         return { result: await jsf.generate(result.schema) };
       }
     })
@@ -25,12 +31,12 @@ const makeMethodMapping = (methods: types.MethodObject[]): IMethodMapping => {
 };
 
 describe("router", () => {
-  _.forEach(examples, (example, exampleName) => {
+  _.forEach(examples, (example: OpenRPC, exampleName: string) => {
     describe(exampleName, () => {
 
-      let parsedExample: types.OpenRPC;
+      let parsedExample: OpenRPC;
       beforeAll(async () => {
-        parsedExample = await parse(JSON.stringify(example));
+        parsedExample = await parseOpenRPCDocument(JSON.stringify(example));
       });
 
       it("is constructed with an OpenRPC document and a method mapping", () => {

@@ -34,10 +34,10 @@ $ open-rpc-server-js init
 $ cat open-rpc-server.json
 {
   "transports": [
-    "HTTPServerTransportOptions",
-    "HTTPSServerTransportOptions",
-    "WebSocketServerTransportOptions",
-    "IPCServerTranportOptions"
+    "HTTPServerTransport",
+    "HTTPSServerTransport",
+    "WebSocketServerTransport",
+    "IPCServerTranport"
   ]
 }
 ```
@@ -58,12 +58,6 @@ addition.js      subtraction.ts
 
 $ cat ./method-handlers/1.0.0/addition.js
 export default (a: number, b: number): Promise<number> => {}
-```
-
-#### Setup simple confg file
-
-```bash
-echo "{ \"transportOptions\": { \"HTTPServerTransportOptions\": { \"port\": 8080 } } }" > open-rpc-server.config.json
 ```
 
 #### Start the server
