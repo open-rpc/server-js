@@ -2,17 +2,17 @@ import cors from "cors";
 import { json as jsonParser } from "body-parser";
 import connect, { HandleFunction } from "connect";
 import http, { ServerOptions } from "http";
-import { ServerTransport } from "./server-transport";
+import ServerTransport from "./server-transport";
 
-export type IHTTPServerTransportOptions = {
+export type THTTPServerTransportOptions = {
   middleware: HandleFunction[],
   port: number;
 } & ServerOptions;
 
-export class HTTPServerTransport extends ServerTransport {
+export default class HTTPServerTransport extends ServerTransport {
   private server: http.Server;
 
-  constructor(private options: IHTTPServerTransportOptions) {
+  constructor(private options: THTTPServerTransportOptions) {
     super();
     const app = connect();
 

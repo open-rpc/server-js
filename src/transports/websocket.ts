@@ -2,22 +2,22 @@ import cors from "cors";
 import { json as jsonParser } from "body-parser";
 import connect, { HandleFunction } from "connect";
 import http2, { ServerOptions, Http2SecureServer, SecureServerOptions } from "http2";
-import { ServerTransport } from "./server-transport";
+import ServerTransport from "./server-transport";
 import { IncomingMessage } from "http";
 import WebSocket from "ws";
 import { Server } from "https";
 
-export type IWebSocketServerTransportOptions = {
+export type TWebSocketServerTransportOptions = {
   middleware: HandleFunction[],
   port: number,
   allowHTTP1?: boolean,
 } & SecureServerOptions;
 
-export class WebSocketServerTransport extends ServerTransport {
+export default class WebSocketServerTransport extends ServerTransport {
   private server: Http2SecureServer;
   private wss: WebSocket.Server;
 
-  constructor(private options: IWebSocketServerTransportOptions) {
+  constructor(private options: TWebSocketServerTransportOptions) {
     super();
     options.allowHTTP1 = true;
 

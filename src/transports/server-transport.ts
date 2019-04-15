@@ -1,7 +1,7 @@
 import { Router } from "../router";
 import _ from "lodash";
 
-export abstract class ServerTransport {
+export default abstract class ServerTransport {
   public routers: Router[] = [];
 
   public addRouter(router: Router) {
