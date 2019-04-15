@@ -4,14 +4,14 @@ import { Router } from "../router";
 import * as fs from "fs";
 import { promisify } from "util";
 const readFile = promisify(fs.readFile);
-import { IpcServerTransport } from "./ipc";
+import IPCTransport from "./ipc";
 import ipc from "node-ipc";
 
 describe("IPC transport", () => {
   it("can start an IPC server that works", async (done) => {
     const simpleMathExample = await parseOpenRPCDocument(examples.simpleMath);
 
-    const ipcTransport = new IpcServerTransport({
+    const ipcTransport = new IPCTransport({
       id: "simpleMath",
       ipv6: false,
       port: 9699,

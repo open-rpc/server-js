@@ -52,6 +52,6 @@ export default class Server {
   }
 
   public start() {
-    console.log("started listening on the following transports:port:");
+    this.transports.forEach((transport) => transport.start());
   }
 }
