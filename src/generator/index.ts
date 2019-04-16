@@ -2,7 +2,7 @@ import { OpenRPC } from "@open-rpc/meta-schema";
 import { resolve, join } from "path";
 import { writeFile, ensureDir } from "fs-extra";
 import template from "./template";
-import { MethodTypings } from "@open-rpc/schema-utils-js"
+import { MethodTypings } from "@open-rpc/schema-utils-js";
 
 export interface IGenerateOptions {
   openrpcDocument: OpenRPC;
@@ -23,9 +23,10 @@ export default async function generate(options: IGenerateOptions) {
   methods.forEach(async (method) => {
     const clientBasedFunctionSignature = methodTypings.getFunctionSignature(method, "typescript");
 
-    const functionSignature = clientBasedFunctionSignature.replace("public ", "export default function");
+    const functionSignature = clientBasedFunctionSignature.replace("public", "export default function");
     const generatedCode = template({
       functionSignature,
+      typeDefs: methodTypings.getTypeDefinitionsForMethod(method, "typescript"),
       method,
     });
 
