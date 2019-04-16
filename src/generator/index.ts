@@ -1,8 +1,8 @@
 import { OpenRPC } from "@open-rpc/meta-schema";
-import { resolve } from "path";
-import { mkdir, writeFile } from "fs-extra";
+import { resolve, join } from "path";
+import { writeFile, ensureDir } from "fs-extra";
 import template from "./template";
-import tsGenerator from "@open-rpc/generator-client/build/src/generators/typescript";
+import { MethodTypings } from "@open-rpc/schema-utils-js"
 
 export interface IGenerateOptions {
   openrpcDocument: OpenRPC;
@@ -11,19 +11,21 @@ export interface IGenerateOptions {
 
 export default async function generate(options: IGenerateOptions) {
   const version = options.openrpcDocument.info.version;
-  const basePath = resolve(`${options.outputDir}/{version}`);
+  const basePath = join(options.outputDir, version);
 
   console.log("Making directory for version");
-  await mkdir(basePath);
+  await ensureDir(basePath);
 
   const methods = options.openrpcDocument.methods;
-  const typeDefs = await tsGenerator.getMethodTypingsMap(options.openrpcDocument);
-  methods.forEach(async (method) => {
-    const clientBasedFunctionSignature = await tsGenerator.getFunctionSignature(method, typeDefs);
+  const methodTypings = new MethodTypings(options.openrpcDocument);
+  await methodTypings.generateTypings();
 
-    const serverFunctionSignature = clientBasedFunctionSignature.replace("public ", "export default function");
+  methods.forEach(async (method) => {
+    const clientBasedFunctionSignature = methodTypings.getFunctionSignature(method, "typescript");
+
+    const functionSignature = clientBasedFunctionSignature.replace("public ", "export default function");
     const generatedCode = template({
-      functionSignature: tsGenerator.getFunctionSignature(method, typeDefs),
+      functionSignature,
       method,
     });
 
