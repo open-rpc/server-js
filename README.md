@@ -14,7 +14,7 @@ Inspired by [mole-rpc](https://github.com/koorchik/node-mole-rpc), built for Ope
      - [x] UDP
      - [x] TCP
  - [x] Automatically Validate JSON Schemas for [ContentDescriptor#schemas](https://spec.open-rpc.org/#content-descriptor-schema) [MethodObject#params](https://spec.open-rpc.org/#method-result).
- - [x] Automatic testing against [MethodObject#examplePairings](https://spec.open-rpc.org/#method-example-pairings).
+ - [x] CLI to start a server by configuration
 
 ## How to Use
 
