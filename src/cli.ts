@@ -2,9 +2,11 @@ import program from "commander";
 import { Server } from "./";
 import { parseOpenRPCDocument } from "@open-rpc/schema-utils-js";
 import { inspect } from "util";
+import generate from "./generator";
 
 program
-  .version(require("./get-version"))
+  .version("1.0.0")
+  .option("-d, --document <documentLocation>", "JSON string or a Path/Url pointing to an OpenROC document");
 
 program
   .command("init")
@@ -15,14 +17,14 @@ program
 
 program
   .command("generate")
-  .option("-s, --schema [schema]", "JSON string or a Path/Url pointing to an open rpc schema")
   .action(async (env, options) => {
-    console.log("Generating server boilerplate with the following options:");
+    const openrpcDocument = await parseOpenRPCDocument(program.document);
+    console.log(`Generating code for ${openrpcDocument.info.title}`);
+    generate({ outputDir: "./nips", openrpcDocument });
   });
 
 program
   .command("start")
-  .option("-s, --schema [schema]", "JSON string or a Path/Url pointing to an open rpc schema")
   .action(async (env, options) => {
     console.log("Starting server with the following options:");
   });

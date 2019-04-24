@@ -6,7 +6,7 @@ import { promisify } from "util";
 const readFile = promisify(fs.readFile);
 import https from "https";
 import WebSocket from "ws";
-import { WebSocketServerTransport } from "./websocket";
+import WebSocketTransport from "./websocket";
 
 const agent = new https.Agent({ rejectUnauthorized: false });
 
@@ -14,7 +14,7 @@ describe("WebSocket transport", () => {
   it("can start an https server that works", async (done) => {
     const simpleMathExample = await parseOpenRPCDocument(examples.simpleMath);
 
-    const webSocketTransport = new WebSocketServerTransport({
+    const webSocketTransport = new WebSocketTransport({
       cert: await readFile(`${process.cwd()}/test-cert/server.cert`),
       key: await readFile(`${process.cwd()}/test-cert/server.key`),
       middleware: [],

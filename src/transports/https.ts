@@ -2,19 +2,19 @@ import cors from "cors";
 import { json as jsonParser } from "body-parser";
 import connect, { HandleFunction } from "connect";
 import http2, { ServerOptions, Http2SecureServer, SecureServerOptions } from "http2";
-import { ServerTransport } from "./server-transport";
+import ServerTransport from "./server-transport";
 import { IncomingMessage } from "http";
 
-export type IHTTPSServerTransportOptions = {
+export type THTTPSServerTransportOptions = {
   middleware: HandleFunction[],
   port: number,
   allowHTTP1?: boolean,
 } & SecureServerOptions;
 
-export class HTTPSServerTransport extends ServerTransport {
+export default class HTTPSServerTransport extends ServerTransport {
   private server: Http2SecureServer;
 
-  constructor(private options: IHTTPSServerTransportOptions) {
+  constructor(private options: THTTPSServerTransportOptions) {
     super();
     options.allowHTTP1 = true;
 

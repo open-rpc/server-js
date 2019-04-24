@@ -179,17 +179,19 @@ const wsTransport = new WebSocketServerTransport(webSocketOptions); // Accepts h
 
 ```typescript
 import { Server } from "node-json-rpc-server";
+import { petstore } from "@open-rpc/examples";
 
 const options = {
   router: router,
-  transports: [
-    tcpIpcTransport,
-    udpIpcTransport,
-    httpTransport,
-    httpsTransport,
-    wsFromHttpsTransport,
-    wsTransport
-  ]
+  transportConfigs: [
+    { type: "IPCTransport", options: { port: "8001" } },
+    { type: "IPCTransport", options: { port: "8001", udp: true } },
+    { type: "HTTPTransport", options: { port: "8002" } },
+    { type: "HTTPSTransport", options: { port: "8003", cert: "...", key: "..." } },
+    { type: "WebSocketTransport", options: { port: "8005" } },
+    { type: "WebSocketTransport", options: { port: "8004", cert: "...", key: "..." } },
+  ],
+  openrpcDocument: petstore
 };
 
 const server = new Server(options);

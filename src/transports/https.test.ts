@@ -4,7 +4,7 @@ import { Router } from "../router";
 import fetch from "node-fetch";
 import * as fs from "fs";
 import { promisify } from "util";
-import { HTTPSServerTransport } from "./https";
+import HTTPTransport from "./https";
 const readFile = promisify(fs.readFile);
 import https from "https";
 import cors from "cors";
@@ -19,7 +19,7 @@ describe("https transport", () => {
 
     const corsOptions = { origin: "*" } as cors.CorsOptions;
 
-    const httpsTransport = new HTTPSServerTransport({
+    const httpsTransport = new HTTPTransport({
       cert: await readFile(`${process.cwd()}/test-cert/server.cert`),
       key: await readFile(`${process.cwd()}/test-cert/server.key`),
       middleware: [

@@ -2,26 +2,26 @@ import cors from "cors";
 import { json as jsonParser } from "body-parser";
 import connect, { HandleFunction } from "connect";
 import http2, { ServerOptions, Http2SecureServer, SecureServerOptions } from "http2";
-import { ServerTransport } from "./server-transport";
+import ServerTransport from "./server-transport";
 import { IncomingMessage } from "http";
 import WebSocket from "ws";
 import { Server } from "https";
-import ipc from "node-ipc";
+import * as ipc from "node-ipc";
 import _ from "lodash";
 
-interface IIpcServerTransportOptions {
+export type TIPCServerTransportOptions = {
   id: string;
   port: number;
   udp: boolean;
   ipv6: boolean;
-}
+};
 
 type UdpType = "udp4" | "udp6" | undefined;
 
-export class IpcServerTransport extends ServerTransport {
+export default class IPCServerTransport extends ServerTransport {
   private server: any;
 
-  constructor(private options: IIpcServerTransportOptions) {
+  constructor(private options: TIPCServerTransportOptions) {
     super();
 
     const udpOption = (options.udp) ? `udp${(options.ipv6) ? "6" : "4"}` : undefined;
@@ -36,7 +36,7 @@ export class IpcServerTransport extends ServerTransport {
         ipc.server.on("message", (data, socket) => {
           const req = JSON.parse(data);
 
-          this.webSocketRouterHandler(req, (result: string) => {
+          this.ipcRouterHandler(req, (result: string) => {
             ipc.server.emit(
               socket,
               "message",
@@ -54,7 +54,7 @@ export class IpcServerTransport extends ServerTransport {
     this.server.start(this.options.port);
   }
 
-  private async webSocketRouterHandler(req: any, respondWith: any) {
+  private async ipcRouterHandler(req: any, respondWith: any) {
     const result = await super.routerHandler(req.id, req.method, req.params);
     respondWith(JSON.stringify(result));
   }
