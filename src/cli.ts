@@ -2,7 +2,6 @@ import program from "commander";
 import { Server } from "./";
 import { parseOpenRPCDocument } from "@open-rpc/schema-utils-js";
 import { inspect } from "util";
-import generate from "./generator";
 import * as fs from "fs";
 import * as util from "util";
 import { keyBy, flatten, chain } from "lodash";
