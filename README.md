@@ -14,7 +14,7 @@ Inspired by [mole-rpc](https://github.com/koorchik/node-mole-rpc), built for Ope
      - [x] UDP
      - [x] TCP
  - [x] Automatically Validate JSON Schemas for [ContentDescriptor#schemas](https://spec.open-rpc.org/#content-descriptor-schema) [MethodObject#params](https://spec.open-rpc.org/#method-result).
- - [x] Automatic testing against [MethodObject#examplePairings](https://spec.open-rpc.org/#method-example-pairings).
+ - [x] CLI to start a server by configuration
 
 ## How to Use
 
@@ -26,41 +26,8 @@ Inspired by [mole-rpc](https://github.com/koorchik/node-mole-rpc), built for Ope
 npm install -g @open-rpc/server-js
 ```
 
-#### Init
-
-```bash
-$ open-rpc-server-js init
-
-$ cat open-rpc-server.json
-{
-  "transports": [
-    "HTTPServerTransport",
-    "HTTPSServerTransport",
-    "WebSocketServerTransport",
-    "IPCServerTranport"
-  ]
-}
-```
-
-#### Generate new api version scaffolding
-
-```bash
-$ open-rpc-server-js \
-  -g \
-  -s https://raw.githubusercontent.com/open-rpc/examples/master/service-descriptions/simple-math-openrpc.json
-OpenRPC Server project initialized!
-
-$ ls ./method-handlers
-1.0.0
-
-$ ls ./method-handlers/1.0.0
-addition.js      subtraction.ts
-
-$ cat ./method-handlers/1.0.0/addition.js
-export default (a: number, b: number): Promise<number> => {}
-```
-
 #### Start the server
+
 ```bash
 open-rpc-server-js \
   -c ./open-rpc-server.config.json \
