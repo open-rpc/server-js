@@ -21,7 +21,6 @@ try {
 }
 
 program
-  .version("1.0.0")
   .option("-d, --document <documentLocation>", "JSON string or a Path/Url pointing to an OpenROC document");
 
 program
