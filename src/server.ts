@@ -22,7 +22,7 @@ export default class Server {
   private transports: TTransportClasses[] = [];
 
   constructor(private options: IServerOptions) {
-    this.addRouter(options.openrpcDocument, options.methodMapping);
+    this.addRouter(options.openrpcDocument, options.methodMapping as IMethodMapping);
     options.transportConfigs.forEach((transportConfig) => {
       this.addTransport(transportConfig.type, transportConfig.options);
     });
