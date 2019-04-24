@@ -1,7 +1,7 @@
 {
   "name": "@open-rpc/server-js",
   "private": false,
-  "version": "1.0.0",
+  "version": "0.0.0-semantic-release-dev",
   "description": "",
   "repository": {
     "type": "git",
@@ -20,8 +20,7 @@
     "test": "jest --coverage",
     "build": "tsc",
     "watch:build": "tsc --watch",
-    "watch:test": "jest --watch",
-    "publish": "npm run build"
+    "watch:test": "jest --watch"
   },
   "author": "",
   "license": "Apache-2.0",
