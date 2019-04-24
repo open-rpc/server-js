@@ -7,10 +7,14 @@ interface ITransportConfig {
   options: TTransportOptions;
 }
 
+export interface IMockModeOptions {
+  mockMode: boolean;
+}
+
 export interface IServerOptions {
   openrpcDocument: OpenRPC;
   transportConfigs: ITransportConfig[];
-  methodMapping: IMethodMapping;
+  methodMapping: IMethodMapping | IMockModeOptions;
 }
 
 export default class Server {
