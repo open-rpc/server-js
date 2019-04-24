@@ -4,7 +4,7 @@ import HTTPSTransport, { THTTPSServerTransportOptions } from "./https";
 import IPCTransport, { TIPCServerTransportOptions } from "./ipc";
 import Transport from "./server-transport";
 
-export type TTransportNames = "IPCTransport" | "HTTPTransport" | "HTTPSTransport" | "WebSocketServerTransport";
+export type TTransportNames = "IPCTransport" | "HTTPTransport" | "HTTPSTransport" | "WebSocketTransport";
 
 export type TTransportClasses = WebSocketTransport |
   HTTPTransport |
