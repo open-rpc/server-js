@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import program from "commander";
 import { Server } from "./";
 import { parseOpenRPCDocument } from "@open-rpc/schema-utils-js";
