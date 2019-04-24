@@ -9,7 +9,6 @@ interface ITransportConfig {
 
 export interface IServerOptions {
   openrpcDocument: OpenRPC;
-  methodHandlerMapping: IMethodMapping;
   transportConfigs: ITransportConfig[];
   methodMapping: IMethodMapping;
 }
