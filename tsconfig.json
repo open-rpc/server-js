@@ -1,11 +1,9 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
-    "target": "es5",
+    "target": "esnext",
     "module": "commonjs",
-    "lib": [
-      "ES2015"
-    ],
+    "moduleResolution": "node",
     "declaration": true,
     "outDir": "./build",
     "strict": true,

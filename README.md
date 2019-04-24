@@ -26,41 +26,8 @@ Inspired by [mole-rpc](https://github.com/koorchik/node-mole-rpc), built for Ope
 npm install -g @open-rpc/server-js
 ```
 
-#### Init
-
-```bash
-$ open-rpc-server-js init
-
-$ cat open-rpc-server.json
-{
-  "transports": [
-    "HTTPServerTransport",
-    "HTTPSServerTransport",
-    "WebSocketServerTransport",
-    "IPCServerTranport"
-  ]
-}
-```
-
-#### Generate new api version scaffolding
-
-```bash
-$ open-rpc-server-js \
-  -g \
-  -s https://raw.githubusercontent.com/open-rpc/examples/master/service-descriptions/simple-math-openrpc.json
-OpenRPC Server project initialized!
-
-$ ls ./method-handlers
-1.0.0
-
-$ ls ./method-handlers/1.0.0
-addition.js      subtraction.ts
-
-$ cat ./method-handlers/1.0.0/addition.js
-export default (a: number, b: number): Promise<number> => {}
-```
-
 #### Start the server
+
 ```bash
 open-rpc-server-js \
   -c ./open-rpc-server.config.json \
