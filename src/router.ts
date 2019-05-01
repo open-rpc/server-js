@@ -78,10 +78,10 @@ export class Router {
         );
         if (foundExample) {
           const foundExampleResult = foundExample.result as ExampleObject;
-          return Promise.resolve({ result: foundExampleResult.value });
+          return Promise.resolve(foundExampleResult.value);
         } else {
           const result = methodObject.result as ContentDescriptorObject;
-          return { result: await jsf.generate(result.schema) };
+          return jsf.generate(result.schema);
         }
       })
       .value();
