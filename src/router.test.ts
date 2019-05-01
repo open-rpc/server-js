@@ -21,10 +21,10 @@ const makeMethodMapping = (methods: MethodObject[]): IMethodMapping => {
       );
       if (foundExample) {
         const foundExampleResult = foundExample.result as ExampleObject;
-        return Promise.resolve({ result: foundExampleResult.value });
+        return foundExampleResult.value;
       } else {
         const result = methodObject.result as ContentDescriptorObject;
-        return { result: await jsf.generate(result.schema) };
+        return jsf.generate(result.schema);
       }
     })
     .value();
@@ -52,7 +52,7 @@ describe("router", () => {
       if (exampleName === "simpleMath") {
         it("Simple math call works", async () => {
           const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods));
-          const { result } = await router.call("addition", [2, 2]);
+          const result = await router.call("addition", [2, 2]);
           expect(result).toBe(4);
         });
 
@@ -69,13 +69,13 @@ describe("router", () => {
 
         it("works in mock mode with valid examplePairing params", async () => {
           const router = new Router(parsedExample, { mockMode: true });
-          const { result } = await router.call("addition", [2, 2]);
+          const result = await router.call("addition", [2, 2]);
           expect(result).toBe(4);
         });
 
         it("works in mock mode with unknown params", async () => {
           const router = new Router(parsedExample, { mockMode: true });
-          const { result } = await router.call("addition", [6, 2]);
+          const  result = await router.call("addition", [6, 2]);
           expect(typeof result).toBe("number");
         });
       }

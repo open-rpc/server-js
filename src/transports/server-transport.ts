@@ -33,7 +33,7 @@ export default abstract class ServerTransport {
     return {
       id,
       jsonrpc: "2.0",
-      ...result,
+      result,
     };
   }
 }
