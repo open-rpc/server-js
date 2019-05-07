@@ -53,7 +53,7 @@ npm install --save @open-rpc/server-js
 
 ```typescript
 import { types } from "@open-rpc/meta-schema";
-import { Router } from "node-json-rpc-server";
+import { Router } from "@open-rpc/server-js";
 
 const openrpcDocument = {
   openrpc: "1.0.0",
@@ -93,7 +93,7 @@ const router = new Router(openrpcDocument, { mockMode: true });
 ##### IPC
 
 ```typescript
-import { TCPIPCServerTranport, UDPIPCServerTranport } from "node-json-rpc-server";
+import { TCPIPCServerTranport, UDPIPCServerTranport } from "@open-rpc/server-js";
 
 const ipcOptions = { maxConnetions: 20 }; // https://www.npmjs.com/package/node-ipc#ipc-config
 const TCPIPCOptions = { ...ipcOptions, networkPort: 4343 };
@@ -106,7 +106,7 @@ const UdpIpcTransport = new IPCServerTranport(UDPIPCTransportOptions);
 ##### HTTP/S
 
 ```
-import { HTTPServerTransport, HTTPSServerTransport } from "node-json-rpc-server";
+import { HTTPServerTransport, HTTPSServerTransport } from "@open-rpc/server-js";
 
 const httpOptions = {
   middleware: [ cors({ origin: "*" }) ],
@@ -127,7 +127,7 @@ const httpsTransport = new HTTPSServerTransport(httpsOptions); // Defaults to us
 ##### WebSockets
 
 ```
-import { WebSocketServerTransport } from "node-json-rpc-server";
+import { WebSocketServerTransport } from "@open-rpc/server-js";
 
 const webSocketFromHttpsOptions = { // extends https://github.com/websockets/ws/blob/master/doc/ws.md#new-websocketserveroptions-callback
   server: httpsTransport.server
@@ -145,7 +145,7 @@ const wsTransport = new WebSocketServerTransport(webSocketOptions); // Accepts h
 ##### With everything known upfront
 
 ```typescript
-import { Server } from "node-json-rpc-server";
+import { Server } from "@open-rpc/server-js";
 import { petstore } from "@open-rpc/examples";
 
 const options = {
