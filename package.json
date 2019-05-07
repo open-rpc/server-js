@@ -7,7 +7,7 @@
     "type": "git",
     "url": "https://github.com/open-rpc/server-js.git"
   },
-  "main": "./build/index.js",
+  "main": "./build/src/index.js",
   "bin": {
     "open-rpc-server-js": "./build/cli.js"
   },
@@ -16,7 +16,7 @@
     ".node-version"
   ],
   "scripts": {
-    "start": "./build/cli.js",
+    "start": "./build/src/cli.js",
     "test": "jest --coverage",
     "build": "tsc",
     "watch:build": "tsc --watch",
