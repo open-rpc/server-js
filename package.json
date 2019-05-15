@@ -16,7 +16,7 @@
     ".node-version"
   ],
   "scripts": {
-    "start": "./build/src/cli.js",
+    "start": "./build/cli.js",
     "test": "jest --coverage",
     "build": "tsc",
     "watch:build": "tsc --watch",
