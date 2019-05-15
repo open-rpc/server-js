@@ -34,7 +34,7 @@ describe("https transport", () => {
     httpsTransport.addRouter(router);
 
     httpsTransport.start();
-    console.log("started");
+    console.log("started"); //tslint:disable-line
 
     const { result } = await fetch("https://localhost:9697", {
       agent,

@@ -9,12 +9,7 @@ import { Server } from "https";
 import * as ipc from "node-ipc";
 import _ from "lodash";
 
-export type TIPCServerTransportOptions = {
-  id: string;
-  port: number;
-  udp: boolean;
-  ipv6: boolean;
-};
+export type TIPCServerTransportOptions = { id: string; port: number; udp: boolean; ipv6: boolean; }; //tslint:disable-line
 
 type UdpType = "udp4" | "udp6" | undefined;
 

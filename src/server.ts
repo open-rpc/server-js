@@ -75,7 +75,7 @@ export default class Server {
   }
 
   public removeRouter() {
-    console.log("tea pot");
+    console.log("tea pot"); // tslint:disable-line
   }
 
   public start() {
