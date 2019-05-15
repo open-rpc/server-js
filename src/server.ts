@@ -2,6 +2,13 @@ import { Router, IMethodMapping } from "./router";
 import { OpenRPC } from "@open-rpc/meta-schema";
 import Transports, { TTransportOptions, TTransportClasses, TTransportNames } from "./transports";
 
+import cors from "cors";
+import { json as jsonParser } from "body-parser";
+import { HandleFunction } from "connect";
+import { THTTPServerTransportOptions } from "./transports/http";
+import { THTTPSServerTransportOptions } from "./transports/https";
+import { TWebSocketServerTransportOptions } from "./transports/websocket";
+
 interface ITransportConfig {
   type: TTransportNames;
   options: TTransportOptions;
@@ -23,7 +30,24 @@ export default class Server {
 
   constructor(private options: IServerOptions) {
     this.addRouter(options.openrpcDocument, options.methodMapping as IMethodMapping);
-    options.transportConfigs.forEach((transportConfig) => {
+
+    const defaultCorsOptions = { origin: "*" } as cors.CorsOptions;
+    const transportConfigs = options.transportConfigs.map((transportConfig) => {
+      if (["HTTPTransport", "HTTPSTransport", "WebSocketTransport"].includes(transportConfig.type)) {
+        const transportOptions = transportConfig.options as THTTPServerTransportOptions |
+          THTTPSServerTransportOptions |
+          TWebSocketServerTransportOptions;
+
+        transportOptions.middleware = [
+          cors(defaultCorsOptions) as HandleFunction,
+          jsonParser(),
+          ...transportOptions.middleware,
+        ];
+      }
+      return transportConfig;
+    });
+
+    transportConfigs.forEach((transportConfig) => {
       this.addTransport(transportConfig.type, transportConfig.options);
     });
   }

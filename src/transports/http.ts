@@ -28,6 +28,7 @@ export default class HTTPServerTransport extends ServerTransport {
   }
 
   private async httpRouterHandler(req: any, res: any) {
+    console.log(req, res.body); //tslint:disable-line
     const result = await this.routerHandler(req.body.id, req.body.method, req.body.params);
     res.setHeader("Content-Type", "application/json");
     res.end(JSON.stringify(result));
