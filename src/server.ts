@@ -5,9 +5,9 @@ import Transports, { TTransportOptions, TTransportClasses, TTransportNames } fro
 import cors from "cors";
 import { json as jsonParser } from "body-parser";
 import { HandleFunction } from "connect";
-import { THTTPServerTransportOptions } from "./transports/http";
-import { THTTPSServerTransportOptions } from "./transports/https";
-import { TWebSocketServerTransportOptions } from "./transports/websocket";
+import { IHTTPServerTransportOptions } from "./transports/http";
+import { IHTTPSServerTransportOptions } from "./transports/https";
+import { IWebSocketServerTransportOptions } from "./transports/websocket";
 
 interface ITransportConfig {
   type: TTransportNames;
@@ -29,25 +29,12 @@ export default class Server {
   private transports: TTransportClasses[] = [];
 
   constructor(private options: IServerOptions) {
-    this.addRouter(options.openrpcDocument, options.methodMapping as IMethodMapping);
+    this.addRouter(
+      options.openrpcDocument,
+      options.methodMapping as IMethodMapping,
+    );
 
-    const defaultCorsOptions = { origin: "*" } as cors.CorsOptions;
-    const transportConfigs = options.transportConfigs.map((transportConfig) => {
-      if (["HTTPTransport", "HTTPSTransport", "WebSocketTransport"].includes(transportConfig.type)) {
-        const transportOptions = transportConfig.options as THTTPServerTransportOptions |
-          THTTPSServerTransportOptions |
-          TWebSocketServerTransportOptions;
-
-        transportOptions.middleware = [
-          cors(defaultCorsOptions) as HandleFunction,
-          jsonParser(),
-          ...transportOptions.middleware,
-        ];
-      }
-      return transportConfig;
-    });
-
-    transportConfigs.forEach((transportConfig) => {
+    options.transportConfigs.forEach((transportConfig) => {
       this.addTransport(transportConfig.type, transportConfig.options);
     });
   }

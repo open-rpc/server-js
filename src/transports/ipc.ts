@@ -1,22 +1,22 @@
 import cors from "cors";
-import { json as jsonParser } from "body-parser";
-import connect, { HandleFunction } from "connect";
-import http2, { ServerOptions, Http2SecureServer, SecureServerOptions } from "http2";
 import ServerTransport from "./server-transport";
-import { IncomingMessage } from "http";
-import WebSocket from "ws";
-import { Server } from "https";
 import * as ipc from "node-ipc";
 import _ from "lodash";
+import { HandleFunction, NextHandleFunction } from "connect";
 
-export type TIPCServerTransportOptions = { id: string; port: number; udp: boolean; ipv6: boolean; }; //tslint:disable-line
+export interface IIPCServerTransportOptions {
+  id: string;
+  port: number;
+  udp: boolean;
+  ipv6: boolean;
+}
 
 type UdpType = "udp4" | "udp6" | undefined;
 
 export default class IPCServerTransport extends ServerTransport {
   private server: any;
 
-  constructor(private options: TIPCServerTransportOptions) {
+  constructor(private options: IIPCServerTransportOptions) {
     super();
 
     const udpOption = (options.udp) ? `udp${(options.ipv6) ? "6" : "4"}` : undefined;

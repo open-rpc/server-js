@@ -4,17 +4,30 @@ import connect, { HandleFunction } from "connect";
 import http, { ServerOptions } from "http";
 import ServerTransport from "./server-transport";
 
-export type THTTPServerTransportOptions = {
-  middleware: HandleFunction[],
+export interface IHTTPServerTransportOptions extends ServerOptions {
+  middleware: HandleFunction[];
   port: number;
-} & ServerOptions;
+  cors?: cors.CorsOptions;
+}
 
 export default class HTTPServerTransport extends ServerTransport {
+  private static defaultCorsOptions = { origin: "*" };
   private server: http.Server;
+  private options: IHTTPServerTransportOptions;
 
-  constructor(private options: THTTPServerTransportOptions) {
+  constructor(options: IHTTPServerTransportOptions) {
     super();
     const app = connect();
+
+    const corsOptions = options.cors || HTTPServerTransport.defaultCorsOptions;
+    this.options = {
+      ...options,
+      middleware: [
+        cors(corsOptions) as HandleFunction,
+        jsonParser(),
+        ...options.middleware,
+      ],
+    };
 
     this.options.middleware.forEach((mw) => app.use(mw));
 
