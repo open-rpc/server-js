@@ -1,5 +1,17 @@
 # OpenRPC Server JS
 
+<center>
+  <span>
+    <img alt="CircleCI branch" src="https://img.shields.io/circleci/project/github/open-rpc/server-js/master.svg">
+    <img src="https://codecov.io/gh/open-rpc/server-js/branch/master/graph/badge.svg" />
+    <img alt="Dependabot status" src="https://api.dependabot.com/badges/status?host=github&repo=open-rpc/server-js" />
+    <img alt="Chat on Discord" src="https://img.shields.io/badge/chat-on%20discord-7289da.svg" />
+    <img alt="npm" src="https://img.shields.io/npm/dt/@open-rpc/server-js.svg" />
+    <img alt="GitHub release" src="https://img.shields.io/github/release/open-rpc/server-js.svg" />
+    <img alt="GitHub commits since latest release" src="https://img.shields.io/github/commits-since/open-rpc/server-js/latest.svg" />
+  </span>
+</center>
+
 JSON-RPC 2.0 Server implementation that supports multiple transport protocols. Built to run with node 10+.
 
 Inspired by [mole-rpc](https://github.com/koorchik/node-mole-rpc), built for OpenRPC.
