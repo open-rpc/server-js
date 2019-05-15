@@ -10,8 +10,9 @@ import { keyBy, flatten, chain } from "lodash";
 import { IMethodMapping } from "./router";
 import { resolve } from "path";
 
-const readDir = util.promisify(fs.readdir);
+const version = require("../package.json").version; // tslint:disable-line
 
+const readDir = util.promisify(fs.readdir);
 const basePath = "./src/method-handlers";
 
 let methodMapping;
@@ -26,6 +27,7 @@ program
   .option("-d, --document <documentLocation>", "JSON string or a Path/Url pointing to an OpenROC document");
 
 program
+  .version(version, "-v, --version")
   .command("start")
   .action(async (env, options) => {
     console.log("Starting server with the following options:");
