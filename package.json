@@ -20,7 +20,7 @@
     "test": "npm run test:lint && npm run test:unit",
     "test:lint": "tslint -c tslint.json 'src/**/*.ts' --fix",
     "test:unit": "jest --coverage",
-    "build": "tsc",
+    "build": "tsc && rm -rf ./build/package.json && cp -R ./build/src/* build/. && rm -rf ./build/src",
     "watch:build": "tsc --watch",
     "watch:test": "jest --watch"
   },
