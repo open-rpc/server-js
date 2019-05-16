@@ -10,7 +10,7 @@ import { keyBy, flatten, chain } from "lodash";
 import { IMethodMapping } from "./router";
 import { resolve } from "path";
 
-const version = require("../package.json").version; // tslint:disable-line
+const version = require("../../package.json").version; // tslint:disable-line
 
 const readDir = util.promisify(fs.readdir);
 const basePath = "./src/method-handlers";
