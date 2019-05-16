@@ -5,13 +5,7 @@ import { Server } from "./";
 import { parseOpenRPCDocument } from "@open-rpc/schema-utils-js";
 import { inspect } from "util";
 import * as fs from "fs";
-import * as util from "util";
-import { keyBy, flatten, chain } from "lodash";
-import { IMethodMapping } from "./router";
-import { resolve } from "path";
-
-const readDir = util.promisify(fs.readdir);
-const basePath = "./src/method-handlers";
+import loadMethodHandlerMapping from "./load-method-handler-mapping";
 
 const cwd = process.cwd();
 
@@ -25,32 +19,15 @@ const init = async () => {
     console.log(e); // tslint:disable-line
   }
   program
-    .option("-d, --document <documentLocation>", "JSON string or a Path/Url pointing to an OpenROC document");
-
-  program
     .version(version, "-v, --version")
+
+    .option("-d, --document <string>", "JSON string or a Path/Url pointing to an OpenROC document")
+    .option("-m, --methodHandlersDirectory <string>", "directory containing method handlers")
+
     .command("start")
     .action(async (env, options) => {
-      const methodFilenames = await readDir(basePath);
-
-      const baba = `${process.cwd()}/src/method-handlers`;
-      // const methodMapping = await import(baba);
-
-      // const readMethodsPromises = methodFilenames.map(async (methodFilename) => {
-      //   const methodPath = `./method-handlers/${methodFilename}`.replace(".ts", "");
-      //   const name = methodFilename.replace(".ts", "");
-      //   const methodHandler = await import(methodPath);
-
-      //   return { name, fn: methodHandler.default };
-      // });
-
-      // const allMethodHandlers = flatten(await Promise.all(readMethodsPromises));
-
-      // const methodHandlerMap = chain(allMethodHandlers)
-      //   .keyBy("name")
-      //   .mapValues("fn")
-      //   .value();
-
+      const methodHandlerMapping = loadMethodHandlerMapping(cwd);
+      console.log('wip'); // tslint:disable-line
     });
 };
 
