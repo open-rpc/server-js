@@ -7,25 +7,36 @@ import { IncomingMessage } from "http";
 import WebSocket from "ws";
 import { Server } from "https";
 
-export type TWebSocketServerTransportOptions = {
-  middleware: HandleFunction[],
-  port: number,
-  allowHTTP1?: boolean,
-} & SecureServerOptions;
+export interface IWebSocketServerTransportOptions extends SecureServerOptions {
+  middleware: HandleFunction[];
+  port: number;
+  cors?: cors.CorsOptions;
+  allowHTTP1?: boolean;
+}
 
 export default class WebSocketServerTransport extends ServerTransport {
+  private static defaultCorsOptions = { origin: "*" };
   private server: Http2SecureServer;
   private wss: WebSocket.Server;
 
-  constructor(private options: TWebSocketServerTransportOptions) {
+  constructor(private options: IWebSocketServerTransportOptions) {
     super();
     options.allowHTTP1 = true;
 
     const app = connect();
-    const corsOptions = { origin: "*" } as cors.CorsOptions;
 
-    app.use(cors(corsOptions) as HandleFunction);
-    app.use(jsonParser());
+    const corsOptions = options.cors || WebSocketServerTransport.defaultCorsOptions;
+    this.options = {
+      ...options,
+      middleware: [
+        cors(corsOptions) as HandleFunction,
+        jsonParser(),
+        ...options.middleware,
+      ],
+    };
+
+    this.options.middleware.forEach((mw) => app.use(mw));
+
     this.server = http2.createSecureServer(options, (req: any, res: any) => app(req, res));
     this.wss = new WebSocket.Server({ server: this.server as Server });
 

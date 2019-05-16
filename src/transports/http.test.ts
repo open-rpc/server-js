@@ -12,10 +12,7 @@ describe("http transport", () => {
     const simpleMathExample = await parseOpenRPCDocument(examples.simpleMath);
     const corsOptions = { origin: "*" } as cors.CorsOptions;
     const httpTransport = new HTTPTransport({
-      middleware: [
-        cors(corsOptions) as HandleFunction,
-        jsonParser(),
-      ],
+      middleware: [],
       port: 9696,
     });
 

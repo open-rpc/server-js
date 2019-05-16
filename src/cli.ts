@@ -18,9 +18,9 @@ const basePath = "./src/method-handlers";
 let methodMapping;
 try {
   methodMapping = import(`${process.cwd()}/src/method-handlers)`);
-} catch(e) {
-  console.log("no method mapping");
-  console.log(e)
+} catch (e) {
+  console.log("no method mapping"); // tslint:disable-line
+  console.log(e); // tslint:disable-line
 }
 
 program
@@ -30,11 +30,10 @@ program
   .version(version, "-v, --version")
   .command("start")
   .action(async (env, options) => {
-    console.log("Starting server with the following options:");
     const methodFilenames = await readDir(basePath);
 
     const baba = `${process.cwd()}/src/method-handlers`;
-    const methodMapping = await import(baba);
+    // const methodMapping = await import(baba);
 
     // const readMethodsPromises = methodFilenames.map(async (methodFilename) => {
     //   const methodPath = `./method-handlers/${methodFilename}`.replace(".ts", "");
@@ -51,7 +50,6 @@ program
     //   .mapValues("fn")
     //   .value();
 
-    console.log(inspect(methodMapping));
   });
 
 if (require.main === module) {

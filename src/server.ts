@@ -2,6 +2,13 @@ import { Router, IMethodMapping } from "./router";
 import { OpenRPC } from "@open-rpc/meta-schema";
 import Transports, { TTransportOptions, TTransportClasses, TTransportNames } from "./transports";
 
+import cors from "cors";
+import { json as jsonParser } from "body-parser";
+import { HandleFunction } from "connect";
+import { IHTTPServerTransportOptions } from "./transports/http";
+import { IHTTPSServerTransportOptions } from "./transports/https";
+import { IWebSocketServerTransportOptions } from "./transports/websocket";
+
 interface ITransportConfig {
   type: TTransportNames;
   options: TTransportOptions;
@@ -22,7 +29,11 @@ export default class Server {
   private transports: TTransportClasses[] = [];
 
   constructor(private options: IServerOptions) {
-    this.addRouter(options.openrpcDocument, options.methodMapping as IMethodMapping);
+    this.addRouter(
+      options.openrpcDocument,
+      options.methodMapping as IMethodMapping,
+    );
+
     options.transportConfigs.forEach((transportConfig) => {
       this.addTransport(transportConfig.type, transportConfig.options);
     });
@@ -51,7 +62,7 @@ export default class Server {
   }
 
   public removeRouter() {
-    console.log("tea pot");
+    console.log("tea pot"); // tslint:disable-line
   }
 
   public start() {
