@@ -5,55 +5,34 @@ import { Server } from "./";
 import { parseOpenRPCDocument } from "@open-rpc/schema-utils-js";
 import { inspect } from "util";
 import * as fs from "fs";
-import * as util from "util";
-import { keyBy, flatten, chain } from "lodash";
-import { IMethodMapping } from "./router";
-import { resolve } from "path";
+import loadMethodHandlerMapping from "./load-method-handler-mapping";
 
-const version = require("../package.json").version; // tslint:disable-line
+const cwd = process.cwd();
 
-const readDir = util.promisify(fs.readdir);
-const basePath = "./src/method-handlers";
+const init = async () => {
+  let methodMapping;
+  const { version } = await import(`../package.json`);
+  try {
+    methodMapping = await import(`${cwd}/src/method-handlers)`);
+  } catch (e) {
+    console.log("no method mapping"); // tslint:disable-line
+    console.log(e); // tslint:disable-line
+  }
+  program
+    .version(version, "-v, --version")
 
-let methodMapping;
-try {
-  methodMapping = import(`${process.cwd()}/src/method-handlers)`);
-} catch (e) {
-  console.log("no method mapping"); // tslint:disable-line
-  console.log(e); // tslint:disable-line
-}
+    .option("-d, --document <string>", "JSON string or a Path/Url pointing to an OpenROC document")
+    .option("-m, --methodHandlersDirectory <string>", "directory containing method handlers")
 
-program
-  .option("-d, --document <documentLocation>", "JSON string or a Path/Url pointing to an OpenROC document");
-
-program
-  .version(version, "-v, --version")
-  .command("start")
-  .action(async (env, options) => {
-    const methodFilenames = await readDir(basePath);
-
-    const baba = `${process.cwd()}/src/method-handlers`;
-    // const methodMapping = await import(baba);
-
-    // const readMethodsPromises = methodFilenames.map(async (methodFilename) => {
-    //   const methodPath = `./method-handlers/${methodFilename}`.replace(".ts", "");
-    //   const name = methodFilename.replace(".ts", "");
-    //   const methodHandler = await import(methodPath);
-
-    //   return { name, fn: methodHandler.default };
-    // });
-
-    // const allMethodHandlers = flatten(await Promise.all(readMethodsPromises));
-
-    // const methodHandlerMap = chain(allMethodHandlers)
-    //   .keyBy("name")
-    //   .mapValues("fn")
-    //   .value();
-
-  });
+    .command("start")
+    .action(async (env, options) => {
+      const methodHandlerMapping = loadMethodHandlerMapping(cwd);
+      console.log('wip'); // tslint:disable-line
+    });
+};
 
 if (require.main === module) {
-  program.parse(process.argv);
+  init().then(() => program.parse(process.argv));
 } else {
   module.exports = program;
 }
