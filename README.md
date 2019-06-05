@@ -38,6 +38,7 @@ Using conventions, documentation and specifications make it easier to:
 - [Hammock Driven Development](https://www.youtube.com/watch?v=f84n5oFoZBc)
 - [Inversion and The Power of Avoiding Stupidity](https://fs.blog/2013/10/inversion/)
 - [choosealicense.com](http://choosealicense.com)
+- [The Documentation Compendium](https://github.com/kylelobo/The-Documentation-Compendium)
 
 ## Getting Started
 
