@@ -8,6 +8,7 @@ import { HandleFunction } from "connect";
 import { IHTTPServerTransportOptions } from "./transports/http";
 import { IHTTPSServerTransportOptions } from "./transports/https";
 import { IWebSocketServerTransportOptions } from "./transports/websocket";
+import _ from "lodash";
 
 interface ITransportConfig {
   type: TTransportNames;
@@ -61,8 +62,9 @@ export default class Server {
     this.transports.forEach((transport) => transport.addRouter(router));
   }
 
-  public removeRouter() {
-    console.log("tea pot"); // tslint:disable-line
+  public removeRouter(routerToRemove: Router) {
+    this.routers = _.without(this.routers, routerToRemove);
+    this.transports.forEach((transport) => transport.removeRouter(routerToRemove));
   }
 
   public start() {
