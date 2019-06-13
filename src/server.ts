@@ -32,7 +32,7 @@ export default class Server {
   constructor(private options: IServerOptions) {
     this.addRouter(
       options.openrpcDocument,
-      options.methodMapping as IMethodMapping,
+      options.methodMapping,
     );
 
     options.transportConfigs.forEach((transportConfig) => {
@@ -56,7 +56,7 @@ export default class Server {
     this.transports.push(transport);
   }
 
-  public addRouter(openrpcDocument: OpenRPC, methodMapping: IMethodMapping) {
+  public addRouter(openrpcDocument: OpenRPC, methodMapping: IMethodMapping | IMockModeOptions) {
     const router = new Router(openrpcDocument, methodMapping);
 
     this.routers.push(router);
