@@ -58,8 +58,11 @@ export default class Server {
 
   public addRouter(openrpcDocument: OpenRPC, methodMapping: IMethodMapping) {
     const router = new Router(openrpcDocument, methodMapping);
+
     this.routers.push(router);
     this.transports.forEach((transport) => transport.addRouter(router));
+
+    return router;
   }
 
   public removeRouter(routerToRemove: Router) {
