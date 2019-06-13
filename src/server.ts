@@ -32,7 +32,7 @@ export default class Server {
   constructor(private options: IServerOptions) {
     this.addRouter(
       options.openrpcDocument,
-      options.methodMapping as IMethodMapping,
+      options.methodMapping,
     );
 
     options.transportConfigs.forEach((transportConfig) => {
