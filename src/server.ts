@@ -21,8 +21,8 @@ export interface IMockModeOptions {
 
 export interface IServerOptions {
   openrpcDocument: OpenRPC;
-  transportConfigs: ITransportConfig[];
-  methodMapping: IMethodMapping | IMockModeOptions;
+  transportConfigs?: ITransportConfig[];
+  methodMapping?: IMethodMapping | IMockModeOptions;
 }
 
 export default class Server {
@@ -30,14 +30,18 @@ export default class Server {
   private transports: TTransportClasses[] = [];
 
   constructor(private options: IServerOptions) {
-    this.addRouter(
-      options.openrpcDocument,
-      options.methodMapping,
-    );
+    if (options.methodMapping) {
+      this.addRouter(
+        options.openrpcDocument,
+        options.methodMapping,
+      );
+    }
 
-    options.transportConfigs.forEach((transportConfig) => {
-      this.addTransport(transportConfig.type, transportConfig.options);
-    });
+    if (options.transportConfigs) {
+      options.transportConfigs.forEach((transportConfig) => {
+        this.addTransport(transportConfig.type, transportConfig.options);
+      });
+    }
   }
 
   public addTransport(transportType: TTransportNames, transportOptions: TTransportOptions) {
