@@ -6,7 +6,7 @@ import {
   ContentDescriptorObject,
   OpenRPC,
 } from "@open-rpc/meta-schema";
-import { MethodCallValidator } from "@open-rpc/schema-utils-js";
+import { MethodCallValidator, MethodNotFoundError, ParameterValidationError } from "@open-rpc/schema-utils-js";
 const jsf = require("json-schema-faker"); // tslint:disable-line
 
 export interface IMethodMapping {
@@ -20,6 +20,7 @@ export interface IMockModeSettings {
 export type TMethodHandler = (...args: any) => Promise<any>;
 
 export class Router {
+
   public static methodNotFoundHandler(methodName: string) {
     return {
       error: {
@@ -29,7 +30,6 @@ export class Router {
       },
     };
   }
-
   private methods: IMethodMapping;
   private methodCallValidator: MethodCallValidator;
 
@@ -42,21 +42,22 @@ export class Router {
     } else {
       this.methods = methodMapping as IMethodMapping;
     }
+    this.methods["rpc.discover"] = this.serviceDiscoveryHandler.bind(this);
 
     this.methodCallValidator = new MethodCallValidator(this.openrpcDocument);
   }
 
   public async call(methodName: string, params: any[]) {
     const validationErrors = this.methodCallValidator.validate(methodName, params);
-    if (validationErrors.length > 0) {
-      return {
-        error: {
-          code: -32602,
-          data: validationErrors,
-          message: "Invalid params",
-        },
-      };
+
+    if (validationErrors instanceof MethodNotFoundError) {
+      return Router.methodNotFoundHandler(methodName);
     }
+
+    if (validationErrors.length > 0) {
+      return this.invalidParamsHandler(validationErrors);
+    }
+
     try {
       return await this.methods[methodName](...params);
     } catch (e) {
@@ -66,6 +67,10 @@ export class Router {
 
   public isMethodImplemented(methodName: string): boolean {
     return this.methods[methodName] !== undefined;
+  }
+
+  private serviceDiscoveryHandler(): Promise<OpenRPC> {
+    return Promise.resolve(this.openrpcDocument);
   }
 
   private buildMockMethodMapping(methods: MethodObject[]): IMethodMapping {
@@ -85,6 +90,16 @@ export class Router {
         }
       })
       .value();
+  }
+
+  private invalidParamsHandler(errs: ParameterValidationError[]) {
+    return {
+      error: {
+        code: -32602,
+        data: errs,
+        message: "Invalid params",
+      },
+    };
   }
 
 }

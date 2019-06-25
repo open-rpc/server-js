@@ -1,7 +1,7 @@
 import { Router, IMethodMapping } from "./router";
 import examples from "@open-rpc/examples";
 import _ from "lodash";
-import { parseOpenRPCDocument } from "@open-rpc/schema-utils-js";
+import { parseOpenRPCDocument, MethodNotFoundError } from "@open-rpc/schema-utils-js";
 import {
   OpenRPC,
   ContentDescriptorObject,
@@ -56,6 +56,24 @@ describe("router", () => {
           expect(result).toBe(4);
         });
 
+        it("returns not found error when using incorrect method", async () => {
+          const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods));
+          const result = await router.call("foobar", [2, 2]);
+          expect(result.error.code).toBe(-32601);
+        });
+
+        it("returns param validation error when passing incorrect params", async () => {
+          const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods));
+          const result = await router.call("addition", ["123", "321"]);
+          expect(result.error.code).toBe(-32602);
+        });
+
+        it("implements service discovery", async () => {
+          const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods));
+          const result = await router.call("rpc.discover", []);
+          expect(result).toEqual(parsedExample);
+        });
+
         it("Simple math call validates params", async () => {
           const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods));
           expect(await router.call("addition", ["2", 2])).toEqual({
@@ -75,7 +93,7 @@ describe("router", () => {
 
         it("works in mock mode with unknown params", async () => {
           const router = new Router(parsedExample, { mockMode: true });
-          const  result = await router.call("addition", [6, 2]);
+          const result = await router.call("addition", [6, 2]);
           expect(typeof result).toBe("number");
         });
       }
