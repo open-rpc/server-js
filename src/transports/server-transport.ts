@@ -15,7 +15,7 @@ export default abstract class ServerTransport {
   protected async routerHandler(id: string | number, methodName: string, params: any[]) {
     if (this.routers.length === 0) {
       console.warn("transport method called without a router configured."); // tslint:disable-line
-      return Router.methodNotFoundHandler(methodName);
+      return new Error("No router configured");
     }
 
     const routerForMethod = _.find(
