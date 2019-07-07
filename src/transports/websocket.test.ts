@@ -41,6 +41,39 @@ describe("WebSocket transport", () => {
     ws.on("message", (data: string) => {
       const { result } = JSON.parse(data);
       expect(result).toBe(4);
+      webSocketTransport.close();
+      done();
+    });
+  });
+  it("can start an http server that works", async (done) => {
+    const simpleMathExample = await parseOpenRPCDocument(examples.simpleMath);
+
+    const webSocketTransport = new WebSocketTransport({
+      middleware: [],
+      port: 9698,
+    });
+
+    const router = new Router(simpleMathExample, { mockMode: true });
+
+    webSocketTransport.addRouter(router);
+
+    webSocketTransport.start();
+
+    const ws = new WebSocket("ws://localhost:9698", { rejectUnauthorized: false });
+
+    ws.on("open", function open() {
+      ws.send(JSON.stringify({
+        id: "0",
+        jsonrpc: "2.0",
+        method: "addition",
+        params: [2, 2],
+      }));
+    });
+
+    ws.on("message", (data: string) => {
+      const { result } = JSON.parse(data);
+      expect(result).toBe(4);
+      webSocketTransport.close();
       done();
     });
   });
