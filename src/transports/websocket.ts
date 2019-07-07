@@ -2,10 +2,9 @@ import cors from "cors";
 import { json as jsonParser } from "body-parser";
 import connect, { HandleFunction } from "connect";
 import http2, { ServerOptions, Http2SecureServer, SecureServerOptions } from "http2";
+import http from "http";
 import ServerTransport from "./server-transport";
-import { IncomingMessage } from "http";
 import WebSocket from "ws";
-import { Server } from "https";
 
 export interface IWebSocketServerTransportOptions extends SecureServerOptions {
   middleware: HandleFunction[];
@@ -16,7 +15,7 @@ export interface IWebSocketServerTransportOptions extends SecureServerOptions {
 
 export default class WebSocketServerTransport extends ServerTransport {
   private static defaultCorsOptions = { origin: "*" };
-  private server: Http2SecureServer;
+  private server: Http2SecureServer | http.Server;
   private wss: WebSocket.Server;
 
   constructor(private options: IWebSocketServerTransportOptions) {
@@ -37,10 +36,14 @@ export default class WebSocketServerTransport extends ServerTransport {
 
     this.options.middleware.forEach((mw) => app.use(mw));
 
-    this.server = http2.createSecureServer(options, (req: any, res: any) => app(req, res));
-    this.wss = new WebSocket.Server({ server: this.server as Server });
+    if (!this.options.cert && !this.options.key) {
+      this.server = http.createServer((req: any, res: any) => app(req, res));
+    } else {
+      this.server = http2.createSecureServer(options, (req: any, res: any) => app(req, res));
+    }
+    this.wss = new WebSocket.Server({ server: this.server as any });
 
-    this.wss.on("connection", (ws) => {
+    this.wss.on("connection", (ws: WebSocket) => {
       ws.on(
         "message",
         (message: string) => this.webSocketRouterHandler(JSON.parse(message), ws.send.bind(ws)),
@@ -50,6 +53,10 @@ export default class WebSocketServerTransport extends ServerTransport {
 
   public start() {
     this.server.listen(this.options.port);
+  }
+
+  public close() {
+    this.server.close();
   }
 
   private async webSocketRouterHandler(req: any, respondWith: any) {
