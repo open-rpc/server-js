@@ -2,7 +2,7 @@ import cors from "cors";
 import { json as jsonParser } from "body-parser";
 import connect, { HandleFunction } from "connect";
 import http, { ServerOptions } from "http";
-import ServerTransport from "./server-transport";
+import ServerTransport, { IJSONRPCRequest } from "./server-transport";
 
 export interface IHTTPServerTransportOptions extends ServerOptions {
   middleware: HandleFunction[];
@@ -40,8 +40,17 @@ export default class HTTPServerTransport extends ServerTransport {
     this.server.listen(this.options.port);
   }
 
+  public stop() {
+    this.server.close();
+  }
+
   private async httpRouterHandler(req: any, res: any) {
-    const result = await this.routerHandler(req.body.id, req.body.method, req.body.params);
+    let result = null;
+    if (req.body instanceof Array) {
+      result = await Promise.all(req.body.map((r: IJSONRPCRequest) => super.routerHandler(r)));
+    } else {
+      result = await super.routerHandler(req.body);
+    }
     res.setHeader("Content-Type", "application/json");
     res.end(JSON.stringify(result));
   }
