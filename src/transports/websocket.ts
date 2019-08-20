@@ -48,6 +48,7 @@ export default class WebSocketServerTransport extends ServerTransport {
         "message",
         (message: string) => this.webSocketRouterHandler(JSON.parse(message), ws.send.bind(ws)),
       );
+      ws.on("close", () => ws.removeAllListeners());
     });
   }
 
@@ -55,7 +56,9 @@ export default class WebSocketServerTransport extends ServerTransport {
     this.server.listen(this.options.port);
   }
 
-  public close() {
+  public stop() {
+    this.wss.removeAllListeners();
+    this.wss.close();
     this.server.close();
   }
 

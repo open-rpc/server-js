@@ -7,14 +7,14 @@ const readFile = promisify(fs.readFile);
 import https from "https";
 import WebSocket from "ws";
 import WebSocketTransport from "./websocket";
-
-const agent = new https.Agent({ rejectUnauthorized: false });
+import { IJSONRPCResponse } from "./server-transport";
 
 describe("WebSocket transport", () => {
+
   it("can start an https server that works", async (done) => {
     const simpleMathExample = await parseOpenRPCDocument(examples.simpleMath);
 
-    const webSocketTransport = new WebSocketTransport({
+    const transport = new WebSocketTransport({
       cert: await readFile(`${process.cwd()}/test-cert/server.cert`),
       key: await readFile(`${process.cwd()}/test-cert/server.key`),
       middleware: [],
@@ -22,59 +22,106 @@ describe("WebSocket transport", () => {
     });
 
     const router = new Router(simpleMathExample, { mockMode: true });
-
-    webSocketTransport.addRouter(router);
-
-    webSocketTransport.start();
+    transport.addRouter(router);
+    transport.start();
 
     const ws = new WebSocket("wss://localhost:9698", { rejectUnauthorized: false });
-
-    ws.on("open", function open() {
+    const handleMessage = (data: string) => {
+      ws.off("message", handleMessage);
+      transport.stop();
+      const { result } = JSON.parse(data);
+      expect(result).toBe(4);
+      done();
+    };
+    const handleConnnect = () => {
+      ws.off("open", handleConnnect);
+      ws.on("message", handleMessage);
       ws.send(JSON.stringify({
         id: "0",
         jsonrpc: "2.0",
         method: "addition",
         params: [2, 2],
       }));
-    });
-
-    ws.on("message", (data: string) => {
-      const { result } = JSON.parse(data);
-      expect(result).toBe(4);
-      webSocketTransport.close();
-      done();
-    });
+    };
+    ws.on("open", handleConnnect);
   });
-  it("can start an http server that works", async (done) => {
+
+  it("can start an https server that works", async (done) => {
     const simpleMathExample = await parseOpenRPCDocument(examples.simpleMath);
 
-    const webSocketTransport = new WebSocketTransport({
+    const transport = new WebSocketTransport({
       middleware: [],
       port: 9698,
     });
 
     const router = new Router(simpleMathExample, { mockMode: true });
-
-    webSocketTransport.addRouter(router);
-
-    webSocketTransport.start();
+    transport.addRouter(router);
+    transport.start();
 
     const ws = new WebSocket("ws://localhost:9698", { rejectUnauthorized: false });
-
-    ws.on("open", function open() {
+    const handleMessage = (data: string) => {
+      ws.off("message", handleMessage);
+      transport.stop();
+      const { result } = JSON.parse(data);
+      expect(result).toBe(4);
+      done();
+    };
+    const handleConnnect = () => {
+      ws.off("open", handleConnnect);
+      ws.on("message", handleMessage);
       ws.send(JSON.stringify({
-        id: "0",
+        id: "1",
         jsonrpc: "2.0",
         method: "addition",
         params: [2, 2],
       }));
+    };
+    ws.on("open", handleConnnect);
+  });
+
+  it("works with batching", async (done) => {
+    const simpleMathExample = await parseOpenRPCDocument(examples.simpleMath);
+
+    const transport = new WebSocketTransport({
+      cert: await readFile(`${process.cwd()}/test-cert/server.cert`),
+      key: await readFile(`${process.cwd()}/test-cert/server.key`),
+      middleware: [],
+      port: 9698,
     });
 
-    ws.on("message", (data: string) => {
-      const { result } = JSON.parse(data);
-      expect(result).toBe(4);
-      webSocketTransport.close();
+    const router = new Router(simpleMathExample, { mockMode: true });
+    transport.addRouter(router);
+    transport.start();
+
+    const ws = new WebSocket("wss://localhost:9698", { rejectUnauthorized: false });
+
+    const handleMessage = (data: string) => {
+      ws.off("message", handleMessage);
+      transport.stop();
+      const result = JSON.parse(data) as IJSONRPCResponse[];
+      expect(result.map((r) => r.result)).toEqual([4, 8]);
+      transport.removeRouter(router);
       done();
-    });
+    };
+
+    const handleConnnect = () => {
+      ws.off("open", handleConnnect);
+      ws.on("message", handleMessage);
+
+      ws.send(JSON.stringify([
+        {
+          id: "2",
+          jsonrpc: "2.0",
+          method: "addition",
+          params: [2, 2],
+        }, {
+          id: "3",
+          jsonrpc: "2.0",
+          method: "addition",
+          params: [4, 4],
+        },
+      ]));
+    };
+    ws.on("open", handleConnnect);
   });
 });
