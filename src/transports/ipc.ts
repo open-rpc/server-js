@@ -1,5 +1,5 @@
 import cors from "cors";
-import ServerTransport from "./server-transport";
+import ServerTransport, { IJSONRPCRequest, IJSONRPCResponse } from "./server-transport";
 import * as ipc from "node-ipc";
 import _ from "lodash";
 import { HandleFunction, NextHandleFunction } from "connect";
@@ -49,8 +49,17 @@ export default class IPCServerTransport extends ServerTransport {
     this.server.start(this.options.port);
   }
 
+  public stop() {
+    this.server.stop();
+  }
+
   private async ipcRouterHandler(req: any, respondWith: any) {
-    const result = await super.routerHandler(req.id, req.method, req.params);
+    let result = null;
+    if (req instanceof Array) {
+      result = await Promise.all(req.map((jsonrpcReq: IJSONRPCRequest) => super.routerHandler(jsonrpcReq)));
+    } else {
+      result = await super.routerHandler(req);
+    }
     respondWith(JSON.stringify(result));
   }
 }

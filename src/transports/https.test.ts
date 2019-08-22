@@ -4,22 +4,24 @@ import { Router } from "../router";
 import fetch from "node-fetch";
 import * as fs from "fs";
 import { promisify } from "util";
-import HTTPTransport from "./https";
+import HTTPSTransport from "./https";
 const readFile = promisify(fs.readFile);
 import https from "https";
 import cors from "cors";
 import { json as jsonParser } from "body-parser";
 import { HandleFunction } from "connect";
+import { IJSONRPCResponse } from "./server-transport";
 
 const agent = new https.Agent({ rejectUnauthorized: false });
 
 describe("https transport", () => {
-  it("can start an https server that works", async () => {
+  let transport: HTTPSTransport;
+  beforeAll(async () => {
     const simpleMathExample = await parseOpenRPCDocument(examples.simpleMath);
 
     const corsOptions = { origin: "*" } as cors.CorsOptions;
 
-    const httpsTransport = new HTTPTransport({
+    transport = new HTTPSTransport({
       cert: await readFile(`${process.cwd()}/test-cert/server.cert`),
       key: await readFile(`${process.cwd()}/test-cert/server.key`),
       middleware: [
@@ -31,11 +33,16 @@ describe("https transport", () => {
 
     const router = new Router(simpleMathExample, { mockMode: true });
 
-    httpsTransport.addRouter(router);
+    transport.addRouter(router);
 
-    httpsTransport.start();
-    console.log("started"); //tslint:disable-line
+    transport.start();
+  });
 
+  afterAll(() => {
+    transport.stop();
+  });
+
+  it("can start an https server that works", async () => {
     const { result } = await fetch("https://localhost:9697", {
       agent,
       body: JSON.stringify({
@@ -49,5 +56,29 @@ describe("https transport", () => {
     }).then((res) => res.json());
 
     expect(result).toBe(4);
+  });
+
+  it("works with batching", async () => {
+    const result = await fetch("https://localhost:9697", {
+      agent,
+      body: JSON.stringify([
+        {
+          id: "0",
+          jsonrpc: "2.0",
+          method: "addition",
+          params: [2, 2],
+        }, {
+          id: "1",
+          jsonrpc: "2.0",
+          method: "addition",
+          params: [4, 4],
+        },
+      ]),
+      headers: { "Content-Type": "application/json" },
+      method: "post",
+    }).then((res) => res.json());
+
+    const pluckedResult = result.map((r: IJSONRPCResponse) => r.result);
+    expect(pluckedResult).toEqual([4, 8]);
   });
 });

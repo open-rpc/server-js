@@ -3,7 +3,7 @@ import { json as jsonParser } from "body-parser";
 import connect, { HandleFunction } from "connect";
 import http2, { ServerOptions, Http2SecureServer, SecureServerOptions } from "http2";
 import http from "http";
-import ServerTransport from "./server-transport";
+import ServerTransport, { IJSONRPCRequest } from "./server-transport";
 import WebSocket from "ws";
 
 export interface IWebSocketServerTransportOptions extends SecureServerOptions {
@@ -48,6 +48,7 @@ export default class WebSocketServerTransport extends ServerTransport {
         "message",
         (message: string) => this.webSocketRouterHandler(JSON.parse(message), ws.send.bind(ws)),
       );
+      ws.on("close", () => ws.removeAllListeners());
     });
   }
 
@@ -55,12 +56,19 @@ export default class WebSocketServerTransport extends ServerTransport {
     this.server.listen(this.options.port);
   }
 
-  public close() {
+  public stop() {
+    this.wss.removeAllListeners();
+    this.wss.close();
     this.server.close();
   }
 
   private async webSocketRouterHandler(req: any, respondWith: any) {
-    const result = await super.routerHandler(req.id, req.method, req.params);
+    let result = null;
+    if (req instanceof Array) {
+      result = await Promise.all(req.map((r: IJSONRPCRequest) => super.routerHandler(r)));
+    } else {
+      result = await super.routerHandler(req);
+    }
     respondWith(JSON.stringify(result));
   }
 }
