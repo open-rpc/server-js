@@ -9,10 +9,11 @@ import {
   ExamplePairingObject,
   MethodObject,
 } from "@open-rpc/meta-schema";
+import { JSONRPCError } from "./error";
 const jsf = require("json-schema-faker"); // tslint:disable-line
 
 const makeMethodMapping = (methods: MethodObject[]): IMethodMapping => {
-  return _.chain(methods)
+  const methodMapping = _.chain(methods)
     .keyBy("name")
     .mapValues((methodObject: MethodObject) => async (...args: any): Promise<any> => {
       const foundExample = _.find(
@@ -28,6 +29,9 @@ const makeMethodMapping = (methods: MethodObject[]): IMethodMapping => {
       }
     })
     .value();
+  methodMapping["test-error"] = async () => { throw new JSONRPCError("test error", 9998, { meta: "data" }); };
+  methodMapping["unknown-error"] = async () => { throw new Error("unanticpated crash"); };
+  return methodMapping;
 };
 
 describe("router", () => {
@@ -37,6 +41,11 @@ describe("router", () => {
       let parsedExample: OpenRPC;
       beforeAll(async () => {
         parsedExample = await parseOpenRPCDocument(JSON.stringify(example));
+        // Mock error methods used to test routing calls
+        const testErrorMethod = { name: "test-error", params: [], result: { name: "test-error-result", schema: {} } };
+        const unknownErrorMethod = Object.assign({}, testErrorMethod, { name: "unknown-error" });
+        parsedExample.methods.push(testErrorMethod);
+        parsedExample.methods.push(unknownErrorMethod);
       });
 
       it("is constructed with an OpenRPC document and a method mapping", () => {
@@ -66,6 +75,20 @@ describe("router", () => {
           const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods));
           const result = await router.call("addition", ["123", "321"]);
           expect(result.error.code).toBe(-32602);
+        });
+
+        it("returns JSONRPCError data when thrown", async () => {
+          const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods));
+          const result = await router.call("test-error", []);
+          expect(result.error.code).toBe(9998);
+          expect(result.error.message).toBe("test error");
+        });
+
+        it("returns Unknown Error data when thrown", async () => {
+          const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods));
+          const result = await router.call("unknown-error", []);
+          expect(result.error.code).toBe(6969);
+          expect(result.error.message).toBe("unknown error");
         });
 
         it("implements service discovery", async () => {

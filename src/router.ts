@@ -7,6 +7,8 @@ import {
   OpenRPC,
 } from "@open-rpc/meta-schema";
 import { MethodCallValidator, MethodNotFoundError, ParameterValidationError } from "@open-rpc/schema-utils-js";
+import { JSONRPCError } from "./error";
+
 const jsf = require("json-schema-faker"); // tslint:disable-line
 
 export interface IMethodMapping {
@@ -61,7 +63,10 @@ export class Router {
     try {
       return await this.methods[methodName](...params);
     } catch (e) {
-      return { code: 6969, message: "unknown error" };
+      if (e instanceof JSONRPCError) {
+        return {error: { code: e.code, message: e.message, data: e.data }};
+      }
+      return { error: { code: 6969, message: "unknown error" } };
     }
   }
 
