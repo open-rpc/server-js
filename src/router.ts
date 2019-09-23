@@ -7,7 +7,7 @@ import {
   OpenRPC,
 } from "@open-rpc/meta-schema";
 import { MethodCallValidator, MethodNotFoundError, ParameterValidationError } from "@open-rpc/schema-utils-js";
-import {JSONRPCError} from "./error";
+import { JSONRPCError } from "./error";
 
 const jsf = require("json-schema-faker"); // tslint:disable-line
 
