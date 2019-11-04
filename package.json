@@ -30,7 +30,7 @@
     "@open-rpc/meta-schema": "^1.4.3",
     "@open-rpc/schema-utils-js": "^1.11.0",
     "body-parser": "^1.18.3",
-    "commander": "^3.0.0",
+    "commander": "^4.0.0",
     "connect": "^3.6.6",
     "cors": "^2.8.5",
     "json-schema-faker": "^0.5.0-rc16",
