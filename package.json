@@ -54,7 +54,7 @@
     "jest": "^24.5.0",
     "node-fetch": "^2.3.0",
     "ts-jest": "^24.0.0",
-    "tslint": "^5.16.0",
+    "tslint": "^6.0.0",
     "typescript-formatter": "^7.2.2",
     "typescript": "^3.3.3333"
   }
