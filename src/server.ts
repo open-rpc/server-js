@@ -1,5 +1,5 @@
 import { Router, IMethodMapping } from "./router";
-import { OpenRPC } from "@open-rpc/meta-schema";
+import { OpenrpcDocument as OpenRPC } from "@open-rpc/meta-schema";
 import Transports, { TTransportOptions, TTransportClasses, TTransportNames } from "./transports";
 
 import cors from "cors";

@@ -1,9 +1,6 @@
 import examples from "@open-rpc/examples";
 import { parseOpenRPCDocument } from "@open-rpc/schema-utils-js";
 import { Router } from "../router";
-import * as fs from "fs";
-import { promisify } from "util";
-const readFile = promisify(fs.readFile);
 import IPCTransport from "./ipc";
 import ipc from "node-ipc";
 import { IJSONRPCResponse } from "./server-transport";

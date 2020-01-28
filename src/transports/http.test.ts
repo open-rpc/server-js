@@ -3,16 +3,12 @@ import { parseOpenRPCDocument } from "@open-rpc/schema-utils-js";
 import { Router } from "../router";
 import HTTPTransport from "./http";
 import fetch from "node-fetch";
-import cors from "cors";
-import { json as jsonParser } from "body-parser";
-import { HandleFunction } from "connect";
 import { IJSONRPCResponse } from "./server-transport";
 
 describe("http transport", () => {
   let transport: HTTPTransport;
   beforeAll(async () => {
     const simpleMathExample = await parseOpenRPCDocument(examples.simpleMath);
-    const corsOptions = { origin: "*" } as cors.CorsOptions;
     transport = new HTTPTransport({
       middleware: [],
       port: 9696,

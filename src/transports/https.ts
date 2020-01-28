@@ -1,9 +1,8 @@
 import cors from "cors";
 import { json as jsonParser } from "body-parser";
 import connect, { HandleFunction } from "connect";
-import http2, { ServerOptions, Http2SecureServer, SecureServerOptions } from "http2";
+import http2, { Http2SecureServer, SecureServerOptions } from "http2";
 import ServerTransport, { IJSONRPCRequest } from "./server-transport";
-import { IncomingMessage } from "http";
 
 export interface IHTTPSServerTransportOptions extends SecureServerOptions {
   middleware: HandleFunction[];
