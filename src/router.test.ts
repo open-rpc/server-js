@@ -3,7 +3,7 @@ import examples from "@open-rpc/examples";
 import _ from "lodash";
 import { parseOpenRPCDocument, MethodNotFoundError } from "@open-rpc/schema-utils-js";
 import {
-  OpenRPC,
+  OpenrpcDocument as OpenRPC,
   ContentDescriptorObject,
   ExampleObject,
   ExamplePairingObject,

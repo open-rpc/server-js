@@ -4,7 +4,7 @@ import {
   MethodObject,
   ExampleObject,
   ContentDescriptorObject,
-  OpenRPC,
+  OpenrpcDocument as OpenRPC,
 } from "@open-rpc/meta-schema";
 import { MethodCallValidator, MethodNotFoundError, ParameterValidationError } from "@open-rpc/schema-utils-js";
 import { JSONRPCError } from "./error";
@@ -64,7 +64,7 @@ export class Router {
       return await this.methods[methodName](...params);
     } catch (e) {
       if (e instanceof JSONRPCError) {
-        return {error: { code: e.code, message: e.message, data: e.data }};
+        return { error: { code: e.code, message: e.message, data: e.data } };
       }
       return { error: { code: 6969, message: "unknown error" } };
     }
