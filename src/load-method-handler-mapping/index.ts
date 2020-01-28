@@ -1,7 +1,6 @@
 import * as fs from "fs";
 import * as util from "util";
 import { flatten, chain } from "lodash";
-import { inspect } from "util";
 const readDir = util.promisify(fs.readdir);
 
 export default async function loadMethodHandlerMapping(basePath: string) {

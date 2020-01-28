@@ -1,8 +1,6 @@
-import cors from "cors";
-import ServerTransport, { IJSONRPCRequest, IJSONRPCResponse } from "./server-transport";
+import ServerTransport, { IJSONRPCRequest } from "./server-transport";
 import * as ipc from "node-ipc";
 import _ from "lodash";
-import { HandleFunction, NextHandleFunction } from "connect";
 
 export interface IIPCServerTransportOptions {
   id: string;
