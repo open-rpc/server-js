@@ -13,6 +13,7 @@
   },
   "files": [
     "build",
+    "!build/**/*.test.*",
     ".node-version"
   ],
   "scripts": {
