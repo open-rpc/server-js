@@ -66,7 +66,7 @@ export class Router {
       if (e instanceof JSONRPCError) {
         return { error: { code: e.code, message: e.message, data: e.data } };
       }
-      return { error: { code: 6969, message: "unknown error" } };
+      return { error: { code: 6969, message: e.message } };
     }
   }
 
