@@ -58,7 +58,6 @@ describe("router", () => {
         expect(new Router(parsedExample, { mockMode: true })).toBeInstanceOf(Router);
       });
 
-      console.log(exampleName); //tslint:disable-line
       if (exampleName === "petstoreByName") {
         it("handles params by name", async () => {
           const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods));
