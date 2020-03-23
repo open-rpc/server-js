@@ -1,7 +1,7 @@
 import { Router, IMethodMapping } from "./router";
 import examples from "@open-rpc/examples";
 import _ from "lodash";
-import { parseOpenRPCDocument, MethodNotFoundError } from "@open-rpc/schema-utils-js";
+import { parseOpenRPCDocument } from "@open-rpc/schema-utils-js";
 import {
   OpenrpcDocument as OpenRPC,
   ContentDescriptorObject,
@@ -58,6 +58,14 @@ describe("router", () => {
         expect(new Router(parsedExample, { mockMode: true })).toBeInstanceOf(Router);
       });
 
+      console.log(exampleName); //tslint:disable-line
+      if (exampleName === "petstoreByName") {
+        it("handles params by name", async () => {
+          const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods));
+          const result = await router.call("list_pets", { limit: 3 });
+          expect(result).toBeDefined();
+        });
+      }
       if (exampleName === "simpleMath") {
         it("Simple math call works", async () => {
           const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods));
@@ -120,6 +128,7 @@ describe("router", () => {
           expect(typeof result).toBe("number");
         });
       }
+
     });
   });
 });
