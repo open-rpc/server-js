@@ -47,8 +47,8 @@ export default abstract class ServerTransport {
       // method not found in any of the routers.
       return Router.methodNotFoundHandler(method);
     }
-    // cast params to any[] until https://github.com/open-rpc/schema-utils-js/issues/206 is fixed
-    const result = await routerForMethod.call(method, params as any[]);
+
+    const result = await routerForMethod.call(method, params);
 
     return {
       id,
