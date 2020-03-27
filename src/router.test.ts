@@ -60,7 +60,6 @@ describe("router", () => {
 
       if (exampleName === "petstoreByName") {
         it("handles params by name", async () => {
-          console.log("testing byName");//tslint:disable-line
           const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods));
           const result = await router.call("list_pets", { limit: 10 });
           expect(result).toBeDefined();
