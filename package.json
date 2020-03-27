@@ -29,7 +29,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@open-rpc/meta-schema": "^1.7.2",
-    "@open-rpc/schema-utils-js": "^1.12.2",
+    "@open-rpc/schema-utils-js": "^1.12.3",
     "body-parser": "^1.18.3",
     "commander": "^5.0.0",
     "connect": "^3.6.6",
