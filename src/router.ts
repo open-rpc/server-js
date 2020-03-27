@@ -55,7 +55,7 @@ export class Router {
     }
     this.methods["rpc.discover"] = this.serviceDiscoveryHandler.bind(this);
 
-    this.methodCallValidator = new MethodCallValidator(this.openrpcDocument);
+    this.methodCallValidator = new MethodCallValidator(openrpcDocument);
   }
 
   public async call(methodName: string, params: any) {
