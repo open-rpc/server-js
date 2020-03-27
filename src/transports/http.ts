@@ -5,7 +5,7 @@ import http, { ServerOptions } from "http";
 import ServerTransport, { IJSONRPCRequest } from "./server-transport";
 
 export interface IHTTPServerTransportOptions extends ServerOptions {
-  middleware: HandleFunction[];
+  middleware?: HandleFunction[];
   port: number;
   cors?: cors.CorsOptions;
 }
