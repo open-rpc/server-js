@@ -4,7 +4,7 @@ import {
   MethodObject,
   ExampleObject,
   ContentDescriptorObject,
-  OpenrpcDocument as OpenRPC,
+  OpenrpcDocument,
 } from "@open-rpc/meta-schema";
 import { MethodCallValidator, MethodNotFoundError, ParameterValidationError } from "@open-rpc/schema-utils-js";
 import { JSONRPCError } from "./error";
@@ -21,6 +21,15 @@ export interface IMockModeSettings {
 
 export type TMethodHandler = (...args: any) => Promise<any>;
 
+const sortParamKeys = (method: MethodObject, params: object) => {
+  const docParams = method.params as ContentDescriptorObject[];
+  const methodParamsOrder: { [k: string]: number } = docParams
+    .map((p) => p.name)
+    .reduce((m, pn, i) => ({ ...m, [pn]: i }), {});
+
+  return Object.entries(params).sort((v1, v2) => methodParamsOrder[v1[0]] - methodParamsOrder[v2[0]]);
+};
+
 export class Router {
 
   public static methodNotFoundHandler(methodName: string) {
@@ -36,7 +45,7 @@ export class Router {
   private methodCallValidator: MethodCallValidator;
 
   constructor(
-    private openrpcDocument: OpenRPC,
+    private openrpcDocument: OpenrpcDocument,
     methodMapping: IMethodMapping | IMockModeSettings,
   ) {
     if (methodMapping.mockMode) {
@@ -49,7 +58,7 @@ export class Router {
     this.methodCallValidator = new MethodCallValidator(this.openrpcDocument);
   }
 
-  public async call(methodName: string, params: any[]) {
+  public async call(methodName: string, params: any) {
     const validationErrors = this.methodCallValidator.validate(methodName, params);
 
     if (validationErrors instanceof MethodNotFoundError) {
@@ -60,8 +69,12 @@ export class Router {
       return this.invalidParamsHandler(validationErrors);
     }
 
+    const methodObject = this.openrpcDocument.methods.find((m) => m.name === methodName) as MethodObject;
+
+    const paramsAsArray = params instanceof Array ? params : sortParamKeys(methodObject, params);
+
     try {
-      return await this.methods[methodName](...params);
+      return await this.methods[methodName](...paramsAsArray);
     } catch (e) {
       if (e instanceof JSONRPCError) {
         return { error: { code: e.code, message: e.message, data: e.data } };
@@ -74,7 +87,7 @@ export class Router {
     return this.methods[methodName] !== undefined;
   }
 
-  private serviceDiscoveryHandler(): Promise<OpenRPC> {
+  private serviceDiscoveryHandler(): Promise<OpenrpcDocument> {
     return Promise.resolve(this.openrpcDocument);
   }
 
@@ -106,5 +119,4 @@ export class Router {
       },
     };
   }
-
 }
