@@ -27,8 +27,8 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@open-rpc/meta-schema": "^1.7.3",
-    "@open-rpc/schema-utils-js": "^1.12.3",
+    "@open-rpc/meta-schema": "^1.8.0",
+    "@open-rpc/schema-utils-js": "^1.13.0",
     "body-parser": "^1.18.3",
     "commander": "^5.0.0",
     "connect": "^3.6.6",
@@ -39,7 +39,7 @@
     "ws": "^7.0.0"
   },
   "devDependencies": {
-    "@open-rpc/examples": "^1.4.1",
+    "@open-rpc/examples": "^1.5.0",
     "@types/body-parser": "^1.17.0",
     "@types/connect": "^3.4.32",
     "@types/cors": "^2.8.4",
@@ -52,8 +52,8 @@
     "@types/node-ipc": "^9.1.1",
     "@types/ws": "^7.2.0",
     "jest": "^25.1.0",
-    "ts-jest": "^25.0.0",
     "node-fetch": "^2.3.0",
+    "ts-jest": "^25.0.0",
     "typescript": "^3.3.3333"
   }
 }
