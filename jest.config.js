@@ -4,5 +4,6 @@ module.exports = {
   resetMocks: true,
   restoreMocks: true,
   rootDir: './src',
-  testEnvironment: 'node'
+  testEnvironment: 'node',
+  preset: 'ts-jest',
 }
