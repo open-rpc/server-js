@@ -1,10 +1,10 @@
-import Server, { IServerOptions } from "./server";
+import Server, { ServerOptions } from "./server";
 import { Router } from "./router";
 import { JSONRPCError } from "./error";
 
 export {
   Server,
-  IServerOptions,
+  ServerOptions,
   Router,
   JSONRPCError,
 };

@@ -1,12 +1,12 @@
 import cors from "cors";
 import { json as jsonParser } from "body-parser";
 import connect, { HandleFunction } from "connect";
-import http2, { ServerOptions, Http2SecureServer, SecureServerOptions } from "http2";
+import http2, { Http2SecureServer, SecureServerOptions } from "http2";
 import http from "http";
-import ServerTransport, { IJSONRPCRequest } from "./server-transport";
+import ServerTransport, { JSONRPCRequest } from "./server-transport";
 import WebSocket from "ws";
 
-export interface IWebSocketServerTransportOptions extends SecureServerOptions {
+export interface WebSocketServerTransportOptions extends SecureServerOptions {
   middleware: HandleFunction[];
   port: number;
   cors?: cors.CorsOptions;
@@ -18,7 +18,7 @@ export default class WebSocketServerTransport extends ServerTransport {
   private server: Http2SecureServer | http.Server;
   private wss: WebSocket.Server;
 
-  constructor(private options: IWebSocketServerTransportOptions) {
+  constructor(private options: WebSocketServerTransportOptions) {
     super();
     options.allowHTTP1 = true;
 
@@ -65,7 +65,7 @@ export default class WebSocketServerTransport extends ServerTransport {
   private async webSocketRouterHandler(req: any, respondWith: any) {
     let result = null;
     if (req instanceof Array) {
-      result = await Promise.all(req.map((r: IJSONRPCRequest) => super.routerHandler(r)));
+      result = await Promise.all(req.map((r: JSONRPCRequest) => super.routerHandler(r)));
     } else {
       result = await super.routerHandler(req);
     }

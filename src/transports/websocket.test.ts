@@ -4,10 +4,9 @@ import { Router } from "../router";
 import * as fs from "fs";
 import { promisify } from "util";
 const readFile = promisify(fs.readFile);
-import https from "https";
 import WebSocket from "ws";
 import WebSocketTransport from "./websocket";
-import { IJSONRPCResponse } from "./server-transport";
+import { JSONRPCResponse } from "./server-transport";
 
 describe("WebSocket transport", () => {
 
@@ -98,7 +97,7 @@ describe("WebSocket transport", () => {
     const handleMessage = (data: string) => {
       ws.off("message", handleMessage);
       transport.stop();
-      const result = JSON.parse(data) as IJSONRPCResponse[];
+      const result = JSON.parse(data) as JSONRPCResponse[];
       expect(result.map((r) => r.result)).toEqual([4, 8]);
       transport.removeRouter(router);
       done();

@@ -10,7 +10,7 @@ import https from "https";
 import cors from "cors";
 import { json as jsonParser } from "body-parser";
 import { HandleFunction } from "connect";
-import { IJSONRPCResponse } from "./server-transport";
+import { JSONRPCResponse } from "./server-transport";
 
 const agent = new https.Agent({ rejectUnauthorized: false });
 
@@ -78,7 +78,7 @@ describe("https transport", () => {
       method: "post",
     }).then((res) => res.json());
 
-    const pluckedResult = result.map((r: IJSONRPCResponse) => r.result);
+    const pluckedResult = result.map((r: JSONRPCResponse) => r.result);
     expect(pluckedResult).toEqual([4, 8]);
   });
 });

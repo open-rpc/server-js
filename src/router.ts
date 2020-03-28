@@ -9,13 +9,13 @@ import {
 import { MethodCallValidator, MethodNotFoundError, ParameterValidationError } from "@open-rpc/schema-utils-js";
 import { JSONRPCError } from "./error";
 
-const jsf = require("json-schema-faker"); // tslint:disable-line
+const jsf = require("json-schema-faker"); // eslint:disable-line
 
-export interface IMethodMapping {
+export interface MethodMapping {
   [methodName: string]: (...params: any) => Promise<any>;
 }
 
-export interface IMockModeSettings {
+export interface MockModeSettings {
   mockMode: boolean;
 }
 
@@ -41,17 +41,17 @@ export class Router {
       },
     };
   }
-  private methods: IMethodMapping;
+  private methods: MethodMapping;
   private methodCallValidator: MethodCallValidator;
 
   constructor(
     private openrpcDocument: OpenrpcDocument,
-    methodMapping: IMethodMapping | IMockModeSettings,
+    methodMapping: MethodMapping | MockModeSettings,
   ) {
     if (methodMapping.mockMode) {
       this.methods = this.buildMockMethodMapping(openrpcDocument.methods);
     } else {
-      this.methods = methodMapping as IMethodMapping;
+      this.methods = methodMapping as MethodMapping;
     }
     this.methods["rpc.discover"] = this.serviceDiscoveryHandler.bind(this);
 
@@ -74,7 +74,7 @@ export class Router {
     const paramsAsArray = params instanceof Array ? params : sortParamKeys(methodObject, params);
 
     try {
-      return await this.methods[methodName](...paramsAsArray);
+      return { result: await this.methods[methodName](...paramsAsArray) };
     } catch (e) {
       if (e instanceof JSONRPCError) {
         return { error: { code: e.code, message: e.message, data: e.data } };
@@ -91,7 +91,7 @@ export class Router {
     return Promise.resolve(this.openrpcDocument);
   }
 
-  private buildMockMethodMapping(methods: MethodObject[]): IMethodMapping {
+  private buildMockMethodMapping(methods: MethodObject[]): MethodMapping {
     return _.chain(methods)
       .keyBy("name")
       .mapValues((methodObject: MethodObject) => async (...args: any): Promise<any> => {

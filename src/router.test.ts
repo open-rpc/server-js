@@ -1,4 +1,4 @@
-import { Router, IMethodMapping } from "./router";
+import { Router, MethodMapping } from "./router";
 import examples from "@open-rpc/examples";
 import _ from "lodash";
 import { parseOpenRPCDocument } from "@open-rpc/schema-utils-js";
@@ -10,9 +10,11 @@ import {
   MethodObject,
 } from "@open-rpc/meta-schema";
 import { JSONRPCError } from "./error";
-const jsf = require("json-schema-faker"); // tslint:disable-line
+import { JSONRPCErrorObject } from "./transports/server-transport";
 
-const makeMethodMapping = (methods: MethodObject[]): IMethodMapping => {
+const jsf = require("json-schema-faker"); // eslint:disable-line
+
+const makeMethodMapping = (methods: MethodObject[]): MethodMapping => {
   const methodMapping = _.chain(methods)
     .keyBy("name")
     .mapValues((methodObject: MethodObject) => async (...args: any): Promise<any> => {
@@ -63,68 +65,68 @@ describe("router", () => {
           const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods));
           const result = await router.call("list_pets", { limit: 10 });
           expect(result).toBeDefined();
-          expect(result.length).toBeGreaterThan(0);
+          expect(result.result.length).toBeGreaterThan(0);
         });
       }
       if (exampleName === "simpleMath") {
         it("Simple math call works", async () => {
           const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods));
-          const result = await router.call("addition", [2, 2]);
+          const { result } = await router.call("addition", [2, 2]);
           expect(result).toBe(4);
         });
 
         it("returns not found error when using incorrect method", async () => {
           const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods));
-          const result = await router.call("foobar", [2, 2]);
-          expect(result.error.code).toBe(-32601);
+          const { error } = await router.call("foobar", [2, 2]);
+          expect((error as JSONRPCErrorObject).code).toBe(-32601);
         });
 
         it("returns param validation error when passing incorrect params", async () => {
           const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods));
-          const result = await router.call("addition", ["123", "321"]);
-          expect(result.error.code).toBe(-32602);
+          const { error } = await router.call("addition", ["123", "321"]);
+          expect(error).toBeDefined();
+          expect((error as JSONRPCErrorObject).code).toBe(-32602);
         });
 
         it("returns JSONRPCError data when thrown", async () => {
           const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods));
-          const result = await router.call("test-error", []);
-          expect(result.error.code).toBe(9998);
-          expect(result.error.message).toBe("test error");
+          const { error } = await router.call("test-error", []);
+          expect((error as JSONRPCErrorObject).code).toBe(9998);
+          expect((error as JSONRPCErrorObject).message).toBe("test error");
         });
 
         it("returns Unknown Error data when thrown", async () => {
           const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods));
-          const result = await router.call("unknown-error", []);
-          expect(result.error.code).toBe(6969);
-          expect(result.error.message).toBe("unknown error");
+          const { error } = await router.call("unknown-error", []);
+          expect((error as JSONRPCErrorObject).code).toBe(6969);
+          expect((error as JSONRPCErrorObject).message).toBe("unknown error");
         });
 
         it("implements service discovery", async () => {
           const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods));
-          const result = await router.call("rpc.discover", []);
+          const { result } = await router.call("rpc.discover", []);
           expect(result).toEqual(parsedExample);
         });
 
         it("Simple math call validates params", async () => {
           const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods));
-          expect(await router.call("addition", ["2", 2])).toEqual({
-            error: {
-              code: -32602,
-              data: expect.any(Array),
-              message: "Invalid params",
-            },
+          const { error } = await router.call("addition", ["2", 2]);
+          expect(error).toEqual({
+            code: -32602,
+            data: expect.any(Array),
+            message: "Invalid params",
           });
         });
 
         it("works in mock mode with valid examplePairing params", async () => {
           const router = new Router(parsedExample, { mockMode: true });
-          const result = await router.call("addition", [2, 2]);
+          const { result } = await router.call("addition", [2, 2]);
           expect(result).toBe(4);
         });
 
         it("works in mock mode with unknown params", async () => {
           const router = new Router(parsedExample, { mockMode: true });
-          const result = await router.call("addition", [6, 2]);
+          const { result } = await router.call("addition", [6, 2]);
           expect(typeof result).toBe("number");
         });
       }

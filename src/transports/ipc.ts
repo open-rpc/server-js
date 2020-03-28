@@ -1,8 +1,8 @@
-import ServerTransport, { IJSONRPCRequest } from "./server-transport";
+import ServerTransport, { JSONRPCRequest } from "./server-transport";
 import * as ipc from "node-ipc";
 import _ from "lodash";
 
-export interface IIPCServerTransportOptions {
+export interface IPCServerTransportOptions {
   id: string;
   port: number;
   udp: boolean;
@@ -14,7 +14,7 @@ type UdpType = "udp4" | "udp6" | undefined;
 export default class IPCServerTransport extends ServerTransport {
   private server: any;
 
-  constructor(private options: IIPCServerTransportOptions) {
+  constructor(private options: IPCServerTransportOptions) {
     super();
 
     const udpOption = (options.udp) ? `udp${(options.ipv6) ? "6" : "4"}` : undefined;
@@ -54,7 +54,7 @@ export default class IPCServerTransport extends ServerTransport {
   private async ipcRouterHandler(req: any, respondWith: any) {
     let result = null;
     if (req instanceof Array) {
-      result = await Promise.all(req.map((jsonrpcReq: IJSONRPCRequest) => super.routerHandler(jsonrpcReq)));
+      result = await Promise.all(req.map((jsonrpcReq: JSONRPCRequest) => super.routerHandler(jsonrpcReq)));
     } else {
       result = await super.routerHandler(req);
     }

@@ -3,7 +3,7 @@ import { parseOpenRPCDocument } from "@open-rpc/schema-utils-js";
 import { Router } from "../router";
 import IPCTransport from "./ipc";
 import ipc from "node-ipc";
-import { IJSONRPCResponse } from "./server-transport";
+import { JSONRPCResponse } from "./server-transport";
 
 describe("IPC transport", () => {
   let transport: IPCTransport;
@@ -61,7 +61,7 @@ describe("IPC transport", () => {
   it("works with batching", (done) => {
     const handle = (data: any) => {
       ipc.of.simpleMath.off("message", handle);
-      const result = JSON.parse(data) as IJSONRPCResponse[];
+      const result = JSON.parse(data) as JSONRPCResponse[];
       expect(result.map((r) => r.result)).toEqual([4, 8]);
       done();
     };
