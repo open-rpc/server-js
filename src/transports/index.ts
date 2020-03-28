@@ -15,7 +15,9 @@ export type TransportOptions = WebSocketServerTransportOptions |
   HTTPSServerTransportOptions |
   IPCServerTransportOptions;
 
-export interface TransportsMapping { [name: string]: any; }
+export interface TransportsMapping {
+  [name: string]: any;
+}
 
 const transports: TransportsMapping = {
   HTTPSTransport,

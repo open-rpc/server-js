@@ -9,7 +9,7 @@ import {
 import { MethodCallValidator, MethodNotFoundError, ParameterValidationError } from "@open-rpc/schema-utils-js";
 import { JSONRPCError } from "./error";
 
-const jsf = require("json-schema-faker"); // eslint:disable-line
+const jsf = require("json-schema-faker"); // eslint-disable-line @typescript-eslint/interface-name-prefix
 
 export interface MethodMapping {
   [methodName: string]: (...params: any) => Promise<any>;

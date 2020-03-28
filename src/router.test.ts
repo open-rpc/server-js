@@ -12,7 +12,7 @@ import {
 import { JSONRPCError } from "./error";
 import { JSONRPCErrorObject } from "./transports/server-transport";
 
-const jsf = require("json-schema-faker"); // eslint:disable-line
+const jsf = require("json-schema-faker"); // eslint-disable-line @typescript-eslint/interface-name-prefix
 
 const makeMethodMapping = (methods: MethodObject[]): MethodMapping => {
   const methodMapping = _.chain(methods)
