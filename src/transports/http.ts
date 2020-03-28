@@ -2,9 +2,9 @@ import cors from "cors";
 import { json as jsonParser } from "body-parser";
 import connect, { HandleFunction } from "connect";
 import http, { ServerOptions } from "http";
-import ServerTransport, { IJSONRPCRequest } from "./server-transport";
+import ServerTransport, { JSONRPCRequest } from "./server-transport";
 
-export interface IHTTPServerTransportOptions extends ServerOptions {
+export interface HTTPServerTransportOptions extends ServerOptions {
   middleware: HandleFunction[];
   port: number;
   cors?: cors.CorsOptions;
@@ -13,9 +13,9 @@ export interface IHTTPServerTransportOptions extends ServerOptions {
 export default class HTTPServerTransport extends ServerTransport {
   private static defaultCorsOptions = { origin: "*" };
   private server: http.Server;
-  private options: IHTTPServerTransportOptions;
+  private options: HTTPServerTransportOptions;
 
-  constructor(options: IHTTPServerTransportOptions) {
+  constructor(options: HTTPServerTransportOptions) {
     super();
     const app = connect();
 
@@ -36,18 +36,18 @@ export default class HTTPServerTransport extends ServerTransport {
     this.server = http.createServer(app);
   }
 
-  public start() {
+  public start(): void {
     this.server.listen(this.options.port);
   }
 
-  public stop() {
+  public stop(): void {
     this.server.close();
   }
 
-  private async httpRouterHandler(req: any, res: any) {
+  private async httpRouterHandler(req: any, res: any): Promise<void> {
     let result = null;
     if (req.body instanceof Array) {
-      result = await Promise.all(req.body.map((r: IJSONRPCRequest) => super.routerHandler(r)));
+      result = await Promise.all(req.body.map((r: JSONRPCRequest) => super.routerHandler(r)));
     } else {
       result = await super.routerHandler(req.body);
     }

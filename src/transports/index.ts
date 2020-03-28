@@ -1,24 +1,25 @@
-import WebSocketTransport, { IWebSocketServerTransportOptions } from "./websocket";
-import HTTPTransport, { IHTTPServerTransportOptions } from "./http";
-import HTTPSTransport, { IHTTPSServerTransportOptions } from "./https";
-import IPCTransport, { IIPCServerTransportOptions } from "./ipc";
-import Transport from "./server-transport";
+import WebSocketTransport, { WebSocketServerTransportOptions } from "./websocket";
+import HTTPTransport, { HTTPServerTransportOptions } from "./http";
+import HTTPSTransport, { HTTPSServerTransportOptions } from "./https";
+import IPCTransport, { IPCServerTransportOptions } from "./ipc";
 
-export type TTransportNames = "IPCTransport" | "HTTPTransport" | "HTTPSTransport" | "WebSocketTransport";
+export type TransportNames = "IPCTransport" | "HTTPTransport" | "HTTPSTransport" | "WebSocketTransport";
 
-export type TTransportClasses = WebSocketTransport |
+export type TransportClasses = WebSocketTransport |
   HTTPTransport |
   HTTPSTransport |
   IPCTransport;
 
-export type TTransportOptions = IWebSocketServerTransportOptions |
-  IHTTPServerTransportOptions |
-  IHTTPSServerTransportOptions |
-  IIPCServerTransportOptions;
+export type TransportOptions = WebSocketServerTransportOptions |
+  HTTPServerTransportOptions |
+  HTTPSServerTransportOptions |
+  IPCServerTransportOptions;
 
-export interface ITransportsMapping { [name: string]: any; }
+export interface TransportsMapping {
+  [name: string]: any;
+}
 
-const transports: ITransportsMapping = {
+const transports: TransportsMapping = {
   HTTPSTransport,
   HTTPTransport,
   IPCTransport,

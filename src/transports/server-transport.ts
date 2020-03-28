@@ -1,41 +1,41 @@
 import { Router } from "../router";
 import _ from "lodash";
 
-export interface IJSONRPCRequest {
+export interface JSONRPCRequest {
   jsonrpc: string;
   id?: string;
   method: string;
   params: any[] | {};
 }
 
-export interface IJSONRPCErrorObject {
+export interface JSONRPCErrorObject {
   code: number;
   message: string;
   data: any;
 }
 
-export interface IJSONRPCResponse {
+export interface JSONRPCResponse {
   jsonrpc: string;
   id?: string;
   result?: any;
-  error?: IJSONRPCErrorObject;
+  error?: JSONRPCErrorObject;
 }
 
 export default abstract class ServerTransport {
   public routers: Router[] = [];
 
-  public addRouter(router: Router) {
+  public addRouter(router: Router): void {
     this.routers.push(router);
   }
 
-  public removeRouter(router: Router) {
+  public removeRouter(router: Router): void {
     this.routers = _.without(this.routers, router);
   }
 
-  protected async routerHandler({ id, method, params }: IJSONRPCRequest) {
+  protected async routerHandler({ id, method, params }: JSONRPCRequest): Promise<JSONRPCResponse> {
     if (this.routers.length === 0) {
       console.warn("transport method called without a router configured."); // tslint:disable-line
-      return new Error("No router configured");
+      throw new Error("No router configured");
     }
 
     const routerForMethod = _.find(
@@ -43,17 +43,24 @@ export default abstract class ServerTransport {
       (router: Router) => router.isMethodImplemented(method),
     );
 
-    if (routerForMethod === undefined) {
-      // method not found in any of the routers.
-      return Router.methodNotFoundHandler(method);
-    }
-
-    const result = await routerForMethod.call(method, params);
-
-    return {
+    let res = {
       id,
       jsonrpc: "2.0",
-      result,
     };
+
+    if (routerForMethod === undefined) {
+      // method not found in any of the routers.
+      res = {
+        ...res,
+        ...Router.methodNotFoundHandler(method)
+      };
+    } else {
+      res = {
+        ...res,
+        ...await routerForMethod.call(method, params)
+      };
+    }
+
+    return res;
   }
 }

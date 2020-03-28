@@ -1,35 +1,28 @@
-import { Router, IMethodMapping } from "./router";
+import { Router, MethodMapping } from "./router";
 import { OpenrpcDocument as OpenRPC } from "@open-rpc/meta-schema";
-import Transports, { TTransportOptions, TTransportClasses, TTransportNames } from "./transports";
+import Transports, { TransportOptions, TransportClasses, TransportNames } from "./transports";
+import { without } from "lodash";
 
-import cors from "cors";
-import { json as jsonParser } from "body-parser";
-import { HandleFunction } from "connect";
-import { IHTTPServerTransportOptions } from "./transports/http";
-import { IHTTPSServerTransportOptions } from "./transports/https";
-import { IWebSocketServerTransportOptions } from "./transports/websocket";
-import _ from "lodash";
-
-interface ITransportConfig {
-  type: TTransportNames;
-  options: TTransportOptions;
+interface TransportConfig {
+  type: TransportNames;
+  options: TransportOptions;
 }
 
-export interface IMockModeOptions {
+export interface MockModeOptions {
   mockMode: boolean;
 }
 
-export interface IServerOptions {
+export interface ServerOptions {
   openrpcDocument: OpenRPC;
-  transportConfigs?: ITransportConfig[];
-  methodMapping?: IMethodMapping | IMockModeOptions;
+  transportConfigs?: TransportConfig[];
+  methodMapping?: MethodMapping | MockModeOptions;
 }
 
 export default class Server {
   private routers: Router[] = [];
-  private transports: TTransportClasses[] = [];
+  private transports: TransportClasses[] = [];
 
-  constructor(private options: IServerOptions) {
+  constructor(options: ServerOptions) {
     if (options.methodMapping) {
       this.addRouter(
         options.openrpcDocument,
@@ -44,7 +37,7 @@ export default class Server {
     }
   }
 
-  public addTransport(transportType: TTransportNames, transportOptions: TTransportOptions) {
+  public addTransport(transportType: TransportNames, transportOptions: TransportOptions) {
     const TransportClass = Transports[transportType];
 
     if (TransportClass === undefined) {
@@ -60,7 +53,7 @@ export default class Server {
     this.transports.push(transport);
   }
 
-  public addRouter(openrpcDocument: OpenRPC, methodMapping: IMethodMapping | IMockModeOptions) {
+  public addRouter(openrpcDocument: OpenRPC, methodMapping: MethodMapping | MockModeOptions) {
     const router = new Router(openrpcDocument, methodMapping);
 
     this.routers.push(router);
@@ -70,7 +63,7 @@ export default class Server {
   }
 
   public removeRouter(routerToRemove: Router) {
-    this.routers = _.without(this.routers, routerToRemove);
+    this.routers = without(this.routers, routerToRemove);
     this.transports.forEach((transport) => transport.removeRouter(routerToRemove));
   }
 

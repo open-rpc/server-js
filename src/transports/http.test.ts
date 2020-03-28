@@ -3,7 +3,7 @@ import { parseOpenRPCDocument } from "@open-rpc/schema-utils-js";
 import { Router } from "../router";
 import HTTPTransport from "./http";
 import fetch from "node-fetch";
-import { IJSONRPCResponse } from "./server-transport";
+import { JSONRPCResponse } from "./server-transport";
 
 describe("http transport", () => {
   let transport: HTTPTransport;
@@ -58,7 +58,7 @@ describe("http transport", () => {
       method: "post",
     }).then((res) => res.json());
 
-    const pluckedResult = result.map((r: IJSONRPCResponse) => r.result);
+    const pluckedResult = result.map((r: JSONRPCResponse) => r.result);
     expect(pluckedResult).toEqual([4, 8]);
   });
 });
