@@ -24,7 +24,9 @@ export default class HTTPServerTransport extends ServerTransport {
       ...options,
       middleware: [
         cors(corsOptions) as HandleFunction,
-        jsonParser(),
+        jsonParser({
+          limit: "1mb"
+        }),
         ...options.middleware,
       ],
     };
