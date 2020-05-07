@@ -44,7 +44,7 @@ npm install -g @open-rpc/server-js
 open-rpc-server-js \
   -c ./open-rpc-server.config.json \
   -h ./method-handlers \
-  -s https://raw.githubusercontent.com/open-rpc/examples/master/service-descriptions/simple-math-openrpc.json
+  -d https://raw.githubusercontent.com/open-rpc/examples/master/service-descriptions/simple-math-openrpc.json
 ```
 
 Thats it!
