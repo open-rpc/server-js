@@ -53,15 +53,72 @@ Thats it!
 
 ### Javascript/Typescript API
 
-#### Install
+#### High level interface: Server
 
+Here is a basic server layout:
+
+install server, and optionally schema-utils-js if you want to parse/validate the open-rpc document before running.
 ```bash
-npm install --save @open-rpc/server-js
+npm install --save @open-rpc/server-js @open-rpc/schema-utils-js
 ```
 
-#### Creating Routers
+`./src/openrpc.json`
+see: https://raw.githubusercontent.com/open-rpc/examples/master/service-descriptions/simple-math-openrpc.json
 
-##### using method mapping and OpenRPC document
+`src/method-mapping`
+```typescript
+import { MethodMapping } from "@open-rpc/server-js/build/router";
+export const methodMapping: MethodMapping = {
+  addition: (a: number, b: number) => a + b,
+  subtraction: (a: number, b: number) => a - b
+};
+export default methodMapping;
+```
+
+`src/server.ts`
+```typescript
+import { Server, ServerOptions } from "@open-rpc/server-js";
+import { HTTPServerTransportOptions } from "@open-rpc/server-js/build/transports/http";
+import { WebSocketServerTransportOptions } from "@open-rpc/server-js/build/transports/websocket";
+import { OpenrpcDocument } from "@open-rpc/meta-schema";
+import { parseOpenRPCDocument } from "@open-rpc/schema-utils-js";
+import methodMapping from "./method-mapping";
+import doc from "./openrpc.json";
+
+export async function start() {
+  const serverOptions: ServerOptions = {
+    openrpcDocument: await parseOpenRPCDocument(doc as OpenrpcDocument),
+    transportConfigs: [
+      {
+        type: "HTTPTransport",
+        options: {
+          port: 3330,
+          middleware: [],
+        } as HTTPServerTransportOptions,
+      },
+      {
+        type: "WebSocketTransport",
+        options: {
+          port: 3331,
+          middleware: [],
+        } as WebSocketServerTransportOptions,
+      },
+    ],
+    methodMapping,
+  };
+
+  console.log("Starting Server"); // tslint:disable-line
+  const s = new Server(serverOptions);
+
+  s.start();
+}
+```
+
+#### Lower Level Bits
+
+##### Creating Routers
+
+###### using method mapping and OpenRPC document
 
 ```typescript
 import { types } from "@open-rpc/meta-schema";
@@ -94,15 +151,15 @@ const methodHandlerMapping = {
 const router = new Router(openrpcDocument, methodHandlerMapping);
 ```
 
-##### mock mode
+###### mock mode
 
 ```typescript
 const router = new Router(openrpcDocument, { mockMode: true });
 ```
 
-#### Creating Transports
+##### Creating Transports
 
-##### IPC
+###### IPC
 
 ```typescript
 import { TCPIPCServerTranport, UDPIPCServerTranport } from "@open-rpc/server-js";
@@ -115,7 +172,7 @@ const tcpIpcTransport = new IPCServerTranport(TCPIPCTransportOptions);
 const UdpIpcTransport = new IPCServerTranport(UDPIPCTransportOptions);
 ```
 
-##### HTTP/S
+###### HTTP/S
 
 ```
 import { HTTPServerTransport, HTTPSServerTransport } from "@open-rpc/server-js";
@@ -136,7 +193,7 @@ const httpTransport = new HTTPServerTransport(httpOptions);
 const httpsTransport = new HTTPSServerTransport(httpsOptions); // Defaults to using HTTP2, allows HTTP1.
 ```
 
-##### WebSockets
+###### WebSockets
 
 ```
 import { WebSocketServerTransport } from "@open-rpc/server-js";
@@ -152,33 +209,7 @@ const wsFromHttpsTransport = new WebSocketServerTransport(webSocketFromHttpsOpti
 const wsTransport = new WebSocketServerTransport(webSocketOptions); // Accepts http transport as well.
 ```
 
-#### Creating the server
-
-##### With everything known upfront
-
-```typescript
-import { Server } from "@open-rpc/server-js";
-import { petstore } from "@open-rpc/examples";
-
-const options = {
-  router: router,
-  transportConfigs: [
-    { type: "IPCTransport", options: { port: "8001" } },
-    { type: "IPCTransport", options: { port: "8001", udp: true } },
-    { type: "HTTPTransport", options: { port: "8002" } },
-    { type: "HTTPSTransport", options: { port: "8003", cert: "...", key: "..." } },
-    { type: "WebSocketTransport", options: { port: "8005" } },
-    { type: "WebSocketTransport", options: { port: "8004", cert: "...", key: "..." } },
-  ],
-  openrpcDocument: petstore
-};
-
-const server = new Server(options);
-
-server.start();
-```
-
-##### Add components as you go
+###### Add components as you go
 ```
 const server = new Server();
 server.start();
