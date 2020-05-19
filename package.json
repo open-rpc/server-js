@@ -43,7 +43,7 @@
     "@types/body-parser": "^1.17.0",
     "@types/connect": "^3.4.32",
     "@types/cors": "^2.8.4",
-    "@types/fs-extra": "^8.0.0",
+    "@types/fs-extra": "^9.0.0",
     "@types/jest": "^25.1.0",
     "@types/json-schema": "^7.0.3",
     "@types/lodash": "^4.14.123",
