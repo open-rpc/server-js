@@ -54,6 +54,6 @@
     "jest": "^25.5.4",
     "node-fetch": "^2.6.0",
     "ts-jest": "^25.5.1",
-    "typescript": "^3.3.3333"
+    "typescript": "^3.9.7"
   }
 }

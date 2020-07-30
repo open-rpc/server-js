@@ -1,5 +1,5 @@
 import ServerTransport, { JSONRPCRequest } from "./server-transport";
-import * as ipc from "node-ipc";
+import ipc from "node-ipc";
 import _ from "lodash";
 
 export interface IPCServerTransportOptions { // eslint-disable-line @typescript-eslint/interface-name-prefix
