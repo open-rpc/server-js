@@ -27,7 +27,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@open-rpc/schema-utils-js": "^1.13.0",
+    "@open-rpc/schema-utils-js": "^1.14.0",
     "body-parser": "^1.19.0",
     "commander": "^6.0.0",
     "connect": "^3.7.0",
@@ -38,8 +38,8 @@
     "ws": "^7.3.1"
   },
   "devDependencies": {
-    "@open-rpc/meta-schema": "^1.8.0",
     "@open-rpc/examples": "^1.6.0",
+    "@open-rpc/meta-schema": "^1.12.6",
     "@types/body-parser": "^1.19.0",
     "@types/connect": "^3.4.33",
     "@types/cors": "^2.8.6",
