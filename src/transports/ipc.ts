@@ -22,7 +22,6 @@ export default class IPCServerTransport extends ServerTransport {
     ipc.config.id = options.id;
     ipc.config.logger = () => { noop(); };
 
-    console.log(ipc.serveNet);
     ipc.serveNet(
       undefined,
       options.port as number | undefined,
@@ -45,7 +44,7 @@ export default class IPCServerTransport extends ServerTransport {
     this.server = ipc.server;
   }
 
-  public async start() {
+  public start() {
     this.server.start(this.options.port);
   }
 
