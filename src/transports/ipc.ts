@@ -1,6 +1,5 @@
 import ServerTransport, { JSONRPCRequest } from "./server-transport";
 import * as ipc from "node-ipc";
-import _ from "lodash";
 
 export interface IPCServerTransportOptions { // eslint-disable-line @typescript-eslint/interface-name-prefix
   id: string;
@@ -11,6 +10,8 @@ export interface IPCServerTransportOptions { // eslint-disable-line @typescript-
 
 type UdpType = "udp4" | "udp6" | undefined;
 
+const noop = () => { return; }
+
 export default class IPCServerTransport extends ServerTransport {
   private server: any;
 
@@ -19,12 +20,13 @@ export default class IPCServerTransport extends ServerTransport {
 
     const udpOption = (options.udp) ? `udp${(options.ipv6) ? "6" : "4"}` : undefined;
     ipc.config.id = options.id;
-    ipc.config.logger = () => { _.noop(); };
+    ipc.config.logger = () => { noop(); };
 
+    console.log(ipc.serveNet);
     ipc.serveNet(
       undefined,
-      options.port as number,
-      udpOption as UdpType,
+      options.port as number | undefined,
+      udpOption as UdpType | undefined,
       () => {
         ipc.server.on("message", (data, socket) => {
           const req = JSON.parse(data);
@@ -43,7 +45,7 @@ export default class IPCServerTransport extends ServerTransport {
     this.server = ipc.server;
   }
 
-  public start() {
+  public async start() {
     this.server.start(this.options.port);
   }
 

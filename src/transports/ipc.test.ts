@@ -5,23 +5,27 @@ import IPCTransport from "./ipc";
 import ipc from "node-ipc";
 import { JSONRPCResponse } from "./server-transport";
 
-describe("IPC transport", () => {
+describe.only("IPC transport", () => {
   let transport: IPCTransport;
   beforeAll(async () => {
+    console.log("starting beforeAll");
     const simpleMathExample = await parseOpenRPCDocument(examples.simpleMath);
-
+    console.log("Dereffed");
     transport = new IPCTransport({
       id: "simpleMath",
       ipv6: false,
       port: 9699,
       udp: false,
     });
+    console.log("created IPC");
+    ipc.config.id = "simpleMath";
+    ipc.config.retry = 1500;
     const router = new Router(simpleMathExample, { mockMode: true });
     transport.addRouter(router);
     transport.start();
-    ipc.config.id = "simpleMath";
-    ipc.config.retry = 1500;
+    console.log("started transport");
     return new Promise((resolve, reject) => {
+      console.log("Im inside the promis");
       ipc.connectToNet(
         "simpleMath",
         "127.0.0.1",
@@ -44,6 +48,7 @@ describe("IPC transport", () => {
       expect(result).toBe(4);
       done();
     };
+    console.log(ipc.of);
 
     ipc.of.simpleMath.on("message", handle);
 
