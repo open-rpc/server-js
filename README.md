@@ -30,41 +30,18 @@ Inspired by [mole-rpc](https://github.com/koorchik/node-mole-rpc), built for Ope
 
 ## How to Use
 
-### CLI
-
-#### Install
-
-```bash
-npm install -g @open-rpc/server-js
-```
-
-#### Start the server
-
-```bash
-open-rpc-server-js \
-  -c ./open-rpc-server.config.json \
-  -h ./method-handlers \
-  -d https://raw.githubusercontent.com/open-rpc/examples/master/service-descriptions/simple-math-openrpc.json
-```
-
-Thats it!
-
----
-
-### Javascript/Typescript API
-
-#### High level interface: Server
-
-Here is a basic server layout:
-
-install server, and optionally schema-utils-js if you want to parse/validate the open-rpc document before running.
+install server, and optionally schema-utils-js if you want to dereference/validate the open-rpc document before running.
 ```bash
 npm install --save @open-rpc/server-js @open-rpc/schema-utils-js
 ```
 
+Write an open-rpc document describing your service
 `./src/openrpc.json`
 see: https://raw.githubusercontent.com/open-rpc/examples/master/service-descriptions/simple-math-openrpc.json
+or write your own in [playground](https://playground.open-rpc.org/).
 
+
+For each of the methods, create a function that has the same name
 `src/method-mapping`
 ```typescript
 import { MethodMapping } from "@open-rpc/server-js/build/router";
@@ -75,6 +52,7 @@ export const methodMapping: MethodMapping = {
 export default methodMapping;
 ```
 
+Create a server with the methods and the document, serve it over http and websocket
 `src/server.ts`
 ```typescript
 import { Server, ServerOptions } from "@open-rpc/server-js";
@@ -222,4 +200,3 @@ server.addTransports([ wsTransport, wsFromHttpsTransport, httpsTransport ]); // 
 ### Contributing
 
 How to contribute, build and release are outlined in [CONTRIBUTING.md](CONTRIBUTING.md), [BUILDING.md](BUILDING.md) and [RELEASING.md](RELEASING.md) respectively. Commits in this repository follow the [CONVENTIONAL_COMMITS.md](CONVENTIONAL_COMMITS.md) specification.
-

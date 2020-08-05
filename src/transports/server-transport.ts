@@ -1,5 +1,4 @@
 import { Router } from "../router";
-import _ from "lodash";
 
 export interface JSONRPCRequest {
   jsonrpc: string;
@@ -29,7 +28,7 @@ export default abstract class ServerTransport {
   }
 
   public removeRouter(router: Router): void {
-    this.routers = _.without(this.routers, router);
+    this.routers = this.routers.filter((r) => r !== router);
   }
 
   protected async routerHandler({ id, method, params }: JSONRPCRequest): Promise<JSONRPCResponse> {
@@ -38,10 +37,7 @@ export default abstract class ServerTransport {
       throw new Error("No router configured");
     }
 
-    const routerForMethod = _.find(
-      this.routers,
-      (router: Router) => router.isMethodImplemented(method),
-    );
+    const routerForMethod = this.routers.find((r) => r.isMethodImplemented(method));
 
     let res = {
       id,

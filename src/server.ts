@@ -1,7 +1,6 @@
 import { Router, MethodMapping } from "./router";
 import { OpenrpcDocument as OpenRPC } from "@open-rpc/meta-schema";
 import Transports, { TransportOptions, TransportClasses, TransportNames } from "./transports";
-import { without } from "lodash";
 
 interface TransportConfig {
   type: TransportNames;
@@ -40,7 +39,7 @@ export default class Server {
   public addTransport(transportType: TransportNames, transportOptions: TransportOptions) {
     const TransportClass = Transports[transportType];
 
-    console.log(`Adding Transport of the type ${transportType} on port ${transportOptions.port}`); 
+    console.log(`Adding Transport of the type ${transportType} on port ${transportOptions.port}`);
 
     if (TransportClass === undefined) {
       throw new Error(`The transport "${transportType}" is not a valid transport type.`);
@@ -65,7 +64,7 @@ export default class Server {
   }
 
   public removeRouter(routerToRemove: Router) {
-    this.routers = without(this.routers, routerToRemove);
+    this.routers = this.routers.filter((r) => r !== routerToRemove);
     this.transports.forEach((transport) => transport.removeRouter(routerToRemove));
   }
 

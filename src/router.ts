@@ -1,4 +1,3 @@
-import _ from "lodash";
 import {
   ExamplePairingObject,
   MethodObject,
@@ -92,22 +91,34 @@ export class Router {
   }
 
   private buildMockMethodMapping(methods: MethodObject[]): MethodMapping {
-    return _.chain(methods)
-      .keyBy("name")
-      .mapValues((methodObject: MethodObject) => async (...args: any): Promise<any> => {
-        const foundExample = _.find(
-          methodObject.examples as ExamplePairingObject[],
-          ({ params }) => _.isMatch(_.map(params, "value"), args),
-        );
+    const methMap: MethodMapping = {};
+
+    methods.forEach((method) => {
+      methMap[method.name] = (...args: any): Promise<any> => {
+        if (method.examples === undefined) {
+          const result = method.result as ContentDescriptorObject;
+          return Promise.resolve(jsf.generate(result.schema));
+        }
+
+        const foundExample = (method.examples as ExamplePairingObject[]).find(({ params }) => {
+          let isMatch = true;
+          (params as ExampleObject[]).forEach((p, i) => {
+            if (p.value !== args[i]) { isMatch = false; }
+          });
+          return isMatch;
+        });
+
         if (foundExample) {
           const foundExampleResult = foundExample.result as ExampleObject;
           return Promise.resolve(foundExampleResult.value);
         } else {
-          const result = methodObject.result as ContentDescriptorObject;
-          return jsf.generate(result.schema);
+          const result = method.result as ContentDescriptorObject;
+          return Promise.resolve(jsf.generate(result.schema));
         }
-      })
-      .value();
+      };
+    });
+
+    return methMap;
   }
 
   private invalidParamsHandler(errs: ParameterValidationError[]) {

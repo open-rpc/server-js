@@ -1,6 +1,5 @@
 import ServerTransport, { JSONRPCRequest } from "./server-transport";
 import ipc from "node-ipc";
-import _ from "lodash";
 
 export interface IPCServerTransportOptions { // eslint-disable-line @typescript-eslint/interface-name-prefix
   id: string;
@@ -19,7 +18,9 @@ export default class IPCServerTransport extends ServerTransport {
 
     const udpOption = (options.udp) ? `udp${(options.ipv6) ? "6" : "4"}` : undefined;
     ipc.config.id = options.id;
-    ipc.config.logger = () => { _.noop(); };
+    ipc.config.logger = () => {
+      // noop
+    };
 
     ipc.serveNet(
       undefined,

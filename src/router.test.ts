@@ -37,7 +37,7 @@ const makeMethodMapping = (methods: MethodObject[]): MethodMapping => {
 };
 
 describe("router", () => {
-  _.forEach(examples, (example: OpenRPC, exampleName: string) => {
+  Object.entries(examples).forEach(([exampleName, example]) => {
     describe(exampleName, () => {
 
       let parsedExample: OpenRPC;
