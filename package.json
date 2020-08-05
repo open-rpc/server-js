@@ -8,9 +8,6 @@
     "url": "https://github.com/open-rpc/server-js.git"
   },
   "main": "./build/index.js",
-  "bin": {
-    "open-rpc-server-js": "./build/cli.js"
-  },
   "files": [
     "build",
     "!build/**/*.test.*",
@@ -29,7 +26,6 @@
   "dependencies": {
     "@open-rpc/schema-utils-js": "^1.14.0",
     "body-parser": "^1.19.0",
-    "commander": "^6.0.0",
     "connect": "^3.7.0",
     "cors": "^2.8.5",
     "json-schema-faker": "^0.5.0-rcv.26",
