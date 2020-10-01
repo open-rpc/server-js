@@ -6,9 +6,6 @@ import AsyncMQTT, { AsyncClient } from "async-mqtt"
 import ServerTransport, { JSONRPCRequest } from "./server-transport";
 
 export interface MQTTServerTransportOptions {
-  // middleware: HandleFunction[];
-  // server: string;
-  // port: number;
   broker: string;
   inTopic: string;
   outTopic: string;
@@ -18,7 +15,6 @@ export interface MQTTServerTransportOptions {
 export default class MQTTServerTransport extends ServerTransport {
   private options: MQTTServerTransportOptions
   public client: AsyncMQTT.AsyncClient | null
-  // public client: AsyncMQTT.AsyncClient
 
   constructor(options: MQTTServerTransportOptions) {
     super()
