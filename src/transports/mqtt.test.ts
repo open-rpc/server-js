@@ -2,11 +2,14 @@ import examples from "@open-rpc/examples";
 import { parseOpenRPCDocument } from "@open-rpc/schema-utils-js";
 import { Router } from "../router";
 import MQTTTransport from "./mqtt";
-import AsyncMQTT from "async-mqtt"
-// import fetch from "node-fetch";
+import AsyncMQTT from "async-mqtt";
+import Aedes from "aedes";
+import Net from "net";
+
 import { JSONRPCResponse } from "./server-transport";
 
 describe('mqtt transport', () => {
+  const mqttBroker = Net.createServer(Aedes().handle);
   const mqttOptions = {
     broker: "tcp://localhost:1883",
     inTopic: "inTopic",
@@ -15,6 +18,7 @@ describe('mqtt transport', () => {
   let transport: MQTTTransport;
   let mqttClient: AsyncMQTT.AsyncClient;
   beforeAll(async () => {
+
     const simpleMathExample = await parseOpenRPCDocument(examples.simpleMath);
     transport = new MQTTTransport(mqttOptions);
 
@@ -22,6 +26,7 @@ describe('mqtt transport', () => {
 
     transport.addRouter(router);
 
+    mqttBroker.listen(1883)
     await transport.connect();
     mqttClient = await AsyncMQTT.connectAsync(mqttOptions.broker)
     mqttClient.subscribe(mqttOptions.outTopic)
@@ -29,6 +34,7 @@ describe('mqtt transport', () => {
 
   afterAll(() => {
     transport.end();
+    mqttBroker.close();
   })
 
   it("can connect to the broker", () => {

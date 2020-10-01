@@ -47,6 +47,7 @@
     "@types/node-fetch": "^2.5.7",
     "@types/node-ipc": "^9.1.3",
     "@types/ws": "^7.2.6",
+    "aedes": "^0.42.6",
     "jest": "^26.1.0",
     "lodash": "^4.17.19",
     "node-fetch": "^2.6.0",
