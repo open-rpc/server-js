@@ -6,8 +6,6 @@ import AsyncMQTT from "async-mqtt";
 import Aedes from "aedes";
 import Net from "net";
 
-import { JSONRPCResponse } from "./server-transport";
-
 describe('mqtt transport', () => {
   const mqttBroker = Net.createServer(Aedes().handle);
   const mqttOptions = {
