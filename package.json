@@ -25,6 +25,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@open-rpc/schema-utils-js": "^1.14.0",
+    "async-mqtt": "^2.6.1",
     "body-parser": "^1.19.0",
     "connect": "^3.7.0",
     "cors": "^2.8.5",
