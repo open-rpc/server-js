@@ -24,7 +24,7 @@ describe('mqtt transport', () => {
 
     transport.addRouter(router);
 
-    mqttBroker.listen(1883)
+    mqttBroker.listen(1883);
     await transport.connect();
     mqttClient = await AsyncMQTT.connectAsync(mqttOptions.broker)
     mqttClient.subscribe(mqttOptions.outTopic)
@@ -36,17 +36,17 @@ describe('mqtt transport', () => {
   })
 
   it("can connect to the broker", () => {
-    expect(transport.client?.connected).toBeTruthy()
+    expect(transport.client?.connected).toBeTruthy();
   })
 
   it("can answer to simple JSON-RPC", (done) => {
     const messageHandler = (topic: string, payload: Buffer) => {
-      const response = JSON.parse(payload.toString())
+      const response = JSON.parse(payload.toString());
       expect(response.result).toBe(4);
-      mqttClient.off('message', messageHandler)
-      done()
+      mqttClient.off('message', messageHandler);
+      done();
     }
-    mqttClient.on('message', messageHandler)
+    mqttClient.on('message', messageHandler);
 
     mqttClient.publish(mqttOptions.inTopic, JSON.stringify({
       id: "0",
