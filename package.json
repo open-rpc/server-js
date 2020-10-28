@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "@open-rpc/examples": "^1.6.0",
-    "@open-rpc/meta-schema": "^1.12.7",
+    "@open-rpc/meta-schema": "^1.13.18",
     "@types/body-parser": "^1.19.0",
     "@types/connect": "^3.4.33",
     "@types/cors": "^2.8.6",
