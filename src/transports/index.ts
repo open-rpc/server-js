@@ -3,7 +3,7 @@ import HTTPTransport, { HTTPServerTransportOptions } from "./http";
 import HTTPSTransport, { HTTPSServerTransportOptions } from "./https";
 import IPCTransport, { IPCServerTransportOptions } from "./ipc";
 
-export type TransportNames = "IPCTransport" | "HTTPTransport" | "HTTPSTransport" | "WebSocketTransport";
+export type TransportNames = "IPCTransport" | "HTTPTransport" | "HTTPSTransport" | "WebSocketTransport" | "MQTTServerTransport";
 
 export type TransportClasses = WebSocketTransport |
   HTTPTransport |
