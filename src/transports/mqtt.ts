@@ -1,42 +1,107 @@
-import AsyncMQTT, { AsyncClient } from "async-mqtt";
 import ServerTransport, { JSONRPCRequest } from "./server-transport";
+import Aedes from "aedes";
+import tls from "tls";
+import net from "net";
 
 export interface MQTTServerTransportOptions {
-  broker: string;
   inTopic: string;
   outTopic: string;
+  host: string;
+  protocol: "tcp";
+  port: number | string;
+  /*
+   * Use filename of cert / key file.
+   */
+  tls?: {
+    key: string;
+    cert: string;
+  };
 }
-
 
 export default class MQTTServerTransport extends ServerTransport {
   private options: MQTTServerTransportOptions;
-  public client: AsyncMQTT.AsyncClient | null;
+  private aedes: any;
+  public server: any;
 
   constructor(options: MQTTServerTransportOptions) {
     super();
     this.options = { ...options };
-    this.client = null;
+
+    this.aedes = Aedes();
+
+    switch (this.options.protocol) {
+      case "tcp":
+        this.server = net.createServer(this.aedes.handle);
+        break;
+    }
+
+    this.aedes.on("publish", (packet: any, client: any) => {
+      if (packet.topic !== "inTopic") { return; }
+
+      const { payload } = packet;
+      const parsed = payload.toString();
+      let jsonrpcRequest;
+
+      try {
+        jsonrpcRequest = JSON.parse(parsed);
+      } catch (e) {
+        throw e;
+      }
+
+      this.mqttRouterHandler(jsonrpcRequest, (v: string) => {
+        client.publish({
+          topic: "outTopic",
+          payload: Buffer.from(v),
+        }, (e: Error) => {
+          if (e) { throw e; }
+        });
+      });
+    });
   }
 
-  public async connect(): Promise<any> {
-    this.client = await AsyncMQTT.connectAsync(this.options.broker);
-    this.client.subscribe(this.options.inTopic);
-    this.client.on('message', (topic: string, payload: Buffer) => {
-      this.mqttRouterHandler(JSON.parse(payload.toString()));
-    })
+  public async start(): Promise<void> {
+    this.server.listen(this.options.port);
   }
 
-  public end(): void {
-    this.client?.end();
+  public stop(): Promise<void> {
+    return new Promise((resolve) => {
+      this.aedes.close(() => {
+        this.server.close();
+        resolve();
+      });
+    });
   }
 
-  private async mqttRouterHandler(payload: any): Promise<void> {
+  private publishMessageHandler(packet: any, client: any) {
+    if (packet.topic !== "inTopic") { return; }
+
+    const { payload } = packet;
+    const parsed = payload.toString();
+    let jsonrpcRequest;
+
+    try {
+      jsonrpcRequest = JSON.parse(parsed);
+    } catch (e) {
+      throw e;
+    }
+
+    this.mqttRouterHandler(jsonrpcRequest, (v: string) => {
+      client.publish({
+        topic: "outTopic",
+        payload: Buffer.from(v),
+      }, (e: Error) => {
+        if (e) { throw e; }
+      });
+    });
+  }
+
+  private async mqttRouterHandler(payload: any, respondWith: any): Promise<void> {
     let result = null;
     if (payload instanceof Array) {
       result = await Promise.all(payload.map((r: JSONRPCRequest) => super.routerHandler(r)));
     } else {
       result = await super.routerHandler(payload);
     }
-    this.client?.publish(this.options.outTopic, JSON.stringify(result));
+    return respondWith(JSON.stringify(result));
   }
 }
