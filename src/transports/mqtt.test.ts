@@ -1,7 +1,7 @@
 import examples from "@open-rpc/examples";
 import { parseOpenRPCDocument } from "@open-rpc/schema-utils-js";
 import { Router } from "../router";
-import MQTTTransport from "./mqtt";
+import MQTTTransport, { MQTTServerTransportOptions } from "./mqtt";
 import AsyncMQTT from "async-mqtt";
 import Aedes from "aedes";
 import Net from "net";
@@ -9,50 +9,42 @@ import Net from "net";
 describe('mqtt transport', () => {
   const mqttBroker = Net.createServer(Aedes().handle);
   const mqttOptions = {
-    broker: "tcp://localhost:1883",
+    protocol: "tcp",
+    host: "localhost",
+    port: 1883,
     inTopic: "inTopic",
     outTopic: "outTopic"
-  }
-  let transport: MQTTTransport;
-  let mqttClient: AsyncMQTT.AsyncClient;
-  beforeAll(async () => {
+  } as MQTTServerTransportOptions
 
+  it("can answer to simple JSON-RPC", async (done) => {
     const simpleMathExample = await parseOpenRPCDocument(examples.simpleMath);
-    transport = new MQTTTransport(mqttOptions);
+    const transport = new MQTTTransport(mqttOptions);
 
     const router = new Router(simpleMathExample, { mockMode: true });
 
     transport.addRouter(router);
+    transport.start();
+    const uri = `${mqttOptions.protocol}://${mqttOptions.host}:${mqttOptions.port}`;
+    const mqttClient = await AsyncMQTT.connectAsync(uri)
 
-    mqttBroker.listen(1883);
-    await transport.connect();
-    mqttClient = await AsyncMQTT.connectAsync(mqttOptions.broker)
-    mqttClient.subscribe(mqttOptions.outTopic)
-  });
+    mqttClient.subscribe(mqttOptions.outTopic);
 
-  afterAll(() => {
-    transport.end();
-    mqttBroker.close();
-  })
-
-  it("can connect to the broker", () => {
-    expect(transport.client?.connected).toBeTruthy();
-  })
-
-  it("can answer to simple JSON-RPC", (done) => {
-    const messageHandler = (topic: string, payload: Buffer) => {
+    const messageHandler = async (topic: string, payload: Buffer) => {
       const response = JSON.parse(payload.toString());
-      expect(response.result).toBe(4);
       mqttClient.off('message', messageHandler);
+      await transport.stop();
+      await mqttClient.end();
+      expect(response.result).toBe(4);
       done();
     }
+
     mqttClient.on('message', messageHandler);
 
-    mqttClient.publish(mqttOptions.inTopic, JSON.stringify({
+    await mqttClient.publish(mqttOptions.inTopic, JSON.stringify({
       id: "0",
       jsonrpc: "2.0",
       method: "addition",
       params: [2, 2],
-    }))
+    }));
   })
 });
