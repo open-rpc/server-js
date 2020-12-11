@@ -111,6 +111,12 @@ describe("router", () => {
           expect(result).toEqual(parsedExample);
         });
 
+        it("can call rpc.discover with empty object", async () => {
+          const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods));
+          const { result } = await router.call("rpc.discover", {});
+          expect(result).toEqual(parsedExample);
+        });
+
         it("Simple math call validates params", async () => {
           const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods));
           const { error } = await router.call("addition", ["2", 2]);
