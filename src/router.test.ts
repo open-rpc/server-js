@@ -63,9 +63,12 @@ describe("router", () => {
       if (exampleName === "petstoreByName") {
         it("handles params by name", async () => {
           const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods));
-          const result = await router.call("list_pets", { limit: 10 });
+          const result = await router.call("list_pets", { limit: 1 });
           expect(result).toBeDefined();
           expect(result.result.length).toBeGreaterThan(0);
+          expect(result.result[0].name).toBe("fluffy");
+          expect(result.result[0].id).toBe(7);
+          expect(result.result[0].tag).toBe("poodle");
         });
       }
       if (exampleName === "simpleMath") {
