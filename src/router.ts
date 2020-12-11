@@ -20,13 +20,21 @@ export interface MockModeSettings {
 
 export type TMethodHandler = (...args: any) => Promise<any>;
 
-const sortParamKeys = (method: MethodObject, params: Record<string, unknown>) => {
+const sortParamKeys = (method?: MethodObject, params?: Record<string, unknown>) => {
+  if (!method) {
+    return [];
+  }
+  if (!params) {
+    return [];
+  }
   const docParams = method.params as ContentDescriptorObject[];
   const methodParamsOrder: { [k: string]: number } = docParams
     .map((p) => p.name)
     .reduce((m, pn, i) => ({ ...m, [pn]: i }), {});
 
-  return Object.entries(params).sort((v1, v2) => methodParamsOrder[v1[0]] - methodParamsOrder[v2[0]]);
+  return Object.entries(params)
+    .sort((v1, v2) => methodParamsOrder[v1[0]] - methodParamsOrder[v2[0]])
+    .map(([key, val]) => val);
 };
 
 export class Router {
