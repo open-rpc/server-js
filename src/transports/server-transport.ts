@@ -4,7 +4,7 @@ export interface JSONRPCRequest {
   jsonrpc: string;
   id?: string;
   method: string;
-  params: any[] | {};
+  params: any[] | Record<string, unknown>;
 }
 
 export interface JSONRPCErrorObject {

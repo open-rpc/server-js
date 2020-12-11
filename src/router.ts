@@ -20,7 +20,7 @@ export interface MockModeSettings {
 
 export type TMethodHandler = (...args: any) => Promise<any>;
 
-const sortParamKeys = (method: MethodObject, params: object) => {
+const sortParamKeys = (method: MethodObject, params: Record<string, unknown>) => {
   const docParams = method.params as ContentDescriptorObject[];
   const methodParamsOrder: { [k: string]: number } = docParams
     .map((p) => p.name)
