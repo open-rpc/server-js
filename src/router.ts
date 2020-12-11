@@ -26,7 +26,9 @@ const sortParamKeys = (method: MethodObject, params: object) => {
     .map((p) => p.name)
     .reduce((m, pn, i) => ({ ...m, [pn]: i }), {});
 
-  return Object.entries(params).sort((v1, v2) => methodParamsOrder[v1[0]] - methodParamsOrder[v2[0]]);
+  return Object.entries(params)
+    .sort((v1, v2) => methodParamsOrder[v1[0]] - methodParamsOrder[v2[0]])
+    .map(([key, val]) => val);
 };
 
 export class Router {
