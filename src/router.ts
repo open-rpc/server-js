@@ -56,7 +56,7 @@ export class Router {
     methodMapping: MethodMapping | MockModeSettings,
   ) {
     if (methodMapping.mockMode) {
-      this.methods = this.buildMockMethodMapping(openrpcDocument.methods);
+      this.methods = this.buildMockMethodMapping(openrpcDocument.methods as MethodObject[]);
     } else {
       this.methods = methodMapping as MethodMapping;
     }
@@ -76,7 +76,7 @@ export class Router {
       return this.invalidParamsHandler(validationErrors);
     }
 
-    const methodObject = this.openrpcDocument.methods.find((m) => m.name === methodName) as MethodObject;
+    const methodObject = (this.openrpcDocument.methods as MethodObject[]).find((m) => m.name === methodName) as MethodObject;
 
     const paramsAsArray = params instanceof Array ? params : sortParamKeys(methodObject, params);
 
