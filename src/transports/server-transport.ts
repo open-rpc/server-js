@@ -20,7 +20,7 @@ export interface JSONRPCResponse {
   error?: JSONRPCErrorObject;
 }
 
-export default abstract class ServerTransport {
+export abstract class ServerTransport {
   public routers: Router[] = [];
 
   public addRouter(router: Router): void {
@@ -29,6 +29,11 @@ export default abstract class ServerTransport {
 
   public removeRouter(router: Router): void {
     this.routers = this.routers.filter((r) => r !== router);
+  }
+
+  public start(): void {
+    console.warn("Transport must implement start()"); // tslint:disable-line
+    throw new Error("Transport missing start implementation");
   }
 
   protected async routerHandler({ id, method, params }: JSONRPCRequest): Promise<JSONRPCResponse> {
@@ -60,3 +65,4 @@ export default abstract class ServerTransport {
     return res;
   }
 }
+export default ServerTransport;

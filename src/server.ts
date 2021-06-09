@@ -1,6 +1,6 @@
 import { Router, MethodMapping } from "./router";
 import { OpenrpcDocument as OpenRPC } from "@open-rpc/meta-schema";
-import Transports, { TransportOptions, TransportClasses, TransportNames } from "./transports";
+import Transports, {ServerTransport, TransportOptions, TransportClasses, TransportNames } from "./transports";
 
 interface TransportConfig {
   type: TransportNames;
@@ -31,12 +31,20 @@ export default class Server {
 
     if (options.transportConfigs) {
       options.transportConfigs.forEach((transportConfig) => {
-        this.addTransport(transportConfig.type, transportConfig.options);
+        this.addDefaultTransport(transportConfig.type, transportConfig.options);
       });
     }
   }
 
-  public addTransport(transportType: TransportNames, transportOptions: TransportOptions) {
+  public addTransport(transport: ServerTransport): void{
+    this.routers.forEach((router) => {
+      transport.addRouter(router);
+    });
+
+    this.transports.push(transport);
+  }
+
+  public addDefaultTransport(transportType: TransportNames, transportOptions: TransportOptions) {
     const TransportClass = Transports[transportType];
 
     console.log(`Adding Transport of the type ${transportType} on port ${transportOptions.port}`);
@@ -46,12 +54,7 @@ export default class Server {
     }
 
     const transport = new TransportClass(transportOptions);
-
-    this.routers.forEach((router) => {
-      transport.addRouter(router);
-    });
-
-    this.transports.push(transport);
+    this.addTransport(transport);
   }
 
   public addRouter(openrpcDocument: OpenRPC, methodMapping: MethodMapping | MockModeOptions) {
