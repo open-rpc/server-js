@@ -1,0 +1,14 @@
+version: 2
+updates:
+- package-ecosystem: npm
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: "@open-rpc/meta-schema"
+    versions:
+    - 1.14.1
+  - dependency-name: "@types/node"
+    versions:
+    - 14.14.30
