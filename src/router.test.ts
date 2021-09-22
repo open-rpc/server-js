@@ -133,9 +133,9 @@ describe("router", () => {
           expect(result).toBe(4);
         });
 
-        it("works in mock mode with valid examplePairing params", async () => {
+        it("works in mock mode with valid examplePairing params with by-name", async () => {
           const router = new Router(parsedExample, { mockMode: true });
-          const { result } = await router.call("addition", [2, 2]);
+          const { result } = await router.call("addition", {a: 2, b: 2});
           expect(result).toBe(4);
         });
 
