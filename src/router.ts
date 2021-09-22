@@ -6,6 +6,7 @@ import {
   OpenrpcDocument,
 } from "@open-rpc/meta-schema";
 import { MethodCallValidator, MethodNotFoundError, ParameterValidationError } from "@open-rpc/schema-utils-js";
+import _ from "lodash";
 import { JSONRPCError } from "./error";
 
 const jsf = require("json-schema-faker"); // eslint-disable-line
@@ -111,7 +112,8 @@ export class Router {
         const foundExample = (method.examples as ExamplePairingObject[]).find(({ params }) => {
           let isMatch = true;
           (params as ExampleObject[]).forEach((p, i) => {
-            if (p.value !== args[i]) { isMatch = false; }
+            const eq = _.isEqual(p.value, args[i]);
+            if (!eq) { isMatch = false; }
           });
           return isMatch;
         });
