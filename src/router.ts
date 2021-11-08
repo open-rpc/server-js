@@ -21,7 +21,7 @@ export interface MockModeSettings {
 
 export type TMethodHandler = (...args: any) => Promise<any>;
 
-const sortParamKeys = (method?: MethodObject, params?: Record<string, unknown>) => {
+const toArray = (method?: MethodObject, params?: Record<string, unknown>) => {
   if (!method) {
     return [];
   }
@@ -34,8 +34,10 @@ const sortParamKeys = (method?: MethodObject, params?: Record<string, unknown>) 
     .reduce((m, pn, i) => ({ ...m, [pn]: i }), {});
 
   return Object.entries(params)
-    .sort((v1, v2) => methodParamsOrder[v1[0]] - methodParamsOrder[v2[0]])
-    .map(([key, val]) => val);
+    .reduce((params: unknown[], [key, val]) => {
+      params[methodParamsOrder[key]] = val;
+      return params;
+    }, []);
 };
 
 export class Router {
@@ -79,7 +81,7 @@ export class Router {
 
     const methodObject = (this.openrpcDocument.methods as MethodObject[]).find((m) => m.name === methodName) as MethodObject;
 
-    const paramsAsArray = params instanceof Array ? params : sortParamKeys(methodObject, params);
+    const paramsAsArray = params instanceof Array ? params : toArray(methodObject, params);
 
     try {
       return { result: await this.methods[methodName](...paramsAsArray) };
