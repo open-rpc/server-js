@@ -45,7 +45,7 @@ describe("WebSocket transport", () => {
     ws.on("open", handleConnnect);
   });
 
-  it("can start an https server that works", async (done) => {
+  it("can start an http server that works", async (done) => {
     const simpleMathExample = await parseOpenRPCDocument(examples.simpleMath);
 
     const transport = new WebSocketTransport({
@@ -120,6 +120,35 @@ describe("WebSocket transport", () => {
           params: [4, 4],
         },
       ]));
+    };
+    ws.on("open", handleConnnect);
+  });
+
+  it("handles invalid JSON by responding with the correct error", async (done) => {
+    const INVALID_JSON = -32700;
+    const simpleMathExample = await parseOpenRPCDocument(examples.simpleMath);
+
+    const transport = new WebSocketTransport({
+      middleware: [],
+      port: 9698,
+    });
+
+    const router = new Router(simpleMathExample, { mockMode: true });
+    transport.addRouter(router);
+    transport.start();
+
+    const ws = new WebSocket("ws://localhost:9698", { rejectUnauthorized: false });
+    const handleMessage = (data: string) => {
+      ws.off("message", handleMessage);
+      transport.stop();
+      const { error } = JSON.parse(data);
+      expect(error.code).toBe(INVALID_JSON);
+      done();
+    };
+    const handleConnnect = () => {
+      ws.off("open", handleConnnect);
+      ws.on("message", handleMessage);
+      ws.send('hello, this non-JSON should not kill you');
     };
     ws.on("open", handleConnnect);
   });

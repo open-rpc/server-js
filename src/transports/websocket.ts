@@ -45,13 +45,7 @@ export default class WebSocketServerTransport extends ServerTransport {
     }
     this.wss = new WebSocket.Server({ server: this.server as any });
 
-    this.wss.on("connection", (ws: WebSocket) => {
-      ws.on(
-        "message",
-        (message: string) => this.webSocketRouterHandler(JSON.parse(message), ws.send.bind(ws)),
-      );
-      ws.on("close", () => ws.removeAllListeners());
-    });
+    this.setupEventHandlers();
   }
 
   public start() {
@@ -67,10 +61,40 @@ export default class WebSocketServerTransport extends ServerTransport {
   private async webSocketRouterHandler(req: any, respondWith: any) {
     let result = null;
     if (req instanceof Array) {
-      result = await Promise.all(req.map((r: JSONRPCRequest) => super.routerHandler(r)));
+      result = await Promise.all(
+        req.map((r: JSONRPCRequest) => super.routerHandler(r))
+      );
     } else {
       result = await super.routerHandler(req);
     }
     respondWith(JSON.stringify(result));
+  }
+
+  private onMessage(ws: WebSocket, message: string) {
+    try {
+      return this.webSocketRouterHandler(
+        JSON.parse(message),
+        ws.send.bind(ws)
+      );
+    } catch (e) {
+      ws.send(
+        JSON.stringify({
+          id: 0,
+          jsonrpc: "2.0",
+          error: {
+            code: -32700,
+            message: `Message failure: ${e.toString()}`,
+          },
+        })
+      );
+      return undefined;
+    }
+  }
+
+  private setupEventHandlers() {
+    this.wss.on("connection", (ws: WebSocket) => {
+      ws.on("message", (message: string) => this.onMessage(ws, message));
+      ws.on("close", () => ws.removeAllListeners());
+    });
   }
 }
