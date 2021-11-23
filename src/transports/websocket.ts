@@ -24,14 +24,13 @@ export default class WebSocketServerTransport extends ServerTransport {
 
     const app = connect();
 
-    const corsOptions =
-      options.cors || WebSocketServerTransport.defaultCorsOptions;
+    const corsOptions = options.cors || WebSocketServerTransport.defaultCorsOptions;
     this.options = {
       ...options,
       middleware: [
         cors(corsOptions) as HandleFunction,
         jsonParser({
-          limit: "1mb",
+          limit: "1mb"
         }),
         ...options.middleware,
       ],
@@ -42,9 +41,7 @@ export default class WebSocketServerTransport extends ServerTransport {
     if (!this.options.cert && !this.options.key) {
       this.server = http.createServer((req: any, res: any) => app(req, res));
     } else {
-      this.server = http2.createSecureServer(options, (req: any, res: any) =>
-        app(req, res)
-      );
+      this.server = http2.createSecureServer(options, (req: any, res: any) => app(req, res));
     }
     this.wss = new WebSocket.Server({ server: this.server as any });
 
