@@ -71,15 +71,13 @@ export default class WebSocketServerTransport extends ServerTransport {
   }
 
   private onMessage(ws: WebSocket, message: string) {
+    let jsonMsg: any;
     try {
-      return this.webSocketRouterHandler(
-        JSON.parse(message),
-        ws.send.bind(ws)
-      );
+      jsonMsg = JSON.parse(message);
     } catch (e) {
       ws.send(
         JSON.stringify({
-          id: 0,
+          id: null,
           jsonrpc: "2.0",
           error: {
             code: -32700,
@@ -89,6 +87,10 @@ export default class WebSocketServerTransport extends ServerTransport {
       );
       return undefined;
     }
+    return this.webSocketRouterHandler(
+      jsonMsg,
+      ws.send.bind(ws)
+    );
   }
 
   private setupEventHandlers() {
