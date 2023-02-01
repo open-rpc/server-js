@@ -28,8 +28,8 @@ aliases:
 defaults: &defaults
   working_directory: ~/server-js
   docker:
-    - image: circleci/node:10
-
+    - image: circleci/node:14.17.5
+    
 jobs:
   test:
     <<: *defaults

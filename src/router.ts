@@ -6,6 +6,7 @@ import {
   OpenrpcDocument,
 } from "@open-rpc/meta-schema";
 import { MethodCallValidator, MethodNotFoundError, ParameterValidationError } from "@open-rpc/schema-utils-js";
+import _ from "lodash";
 import { JSONRPCError } from "./error";
 
 const jsf = require("json-schema-faker"); // eslint-disable-line
@@ -20,7 +21,7 @@ export interface MockModeSettings {
 
 export type TMethodHandler = (...args: any) => Promise<any>;
 
-const sortParamKeys = (method?: MethodObject, params?: Record<string, unknown>) => {
+const toArray = (method?: MethodObject, params?: Record<string, unknown>) => {
   if (!method) {
     return [];
   }
@@ -33,8 +34,10 @@ const sortParamKeys = (method?: MethodObject, params?: Record<string, unknown>) 
     .reduce((m, pn, i) => ({ ...m, [pn]: i }), {});
 
   return Object.entries(params)
-    .sort((v1, v2) => methodParamsOrder[v1[0]] - methodParamsOrder[v2[0]])
-    .map(([key, val]) => val);
+    .reduce((params: unknown[], [key, val]) => {
+      params[methodParamsOrder[key]] = val;
+      return params;
+    }, []);
 };
 
 export class Router {
@@ -56,7 +59,7 @@ export class Router {
     methodMapping: MethodMapping | MockModeSettings,
   ) {
     if (methodMapping.mockMode) {
-      this.methods = this.buildMockMethodMapping(openrpcDocument.methods);
+      this.methods = this.buildMockMethodMapping(openrpcDocument.methods as MethodObject[]);
     } else {
       this.methods = methodMapping as MethodMapping;
     }
@@ -76,9 +79,9 @@ export class Router {
       return this.invalidParamsHandler(validationErrors);
     }
 
-    const methodObject = this.openrpcDocument.methods.find((m) => m.name === methodName) as MethodObject;
+    const methodObject = (this.openrpcDocument.methods as MethodObject[]).find((m) => m.name === methodName) as MethodObject;
 
-    const paramsAsArray = params instanceof Array ? params : sortParamKeys(methodObject, params);
+    const paramsAsArray = params instanceof Array ? params : toArray(methodObject, params);
 
     try {
       return { result: await this.methods[methodName](...paramsAsArray) };
@@ -111,7 +114,8 @@ export class Router {
         const foundExample = (method.examples as ExamplePairingObject[]).find(({ params }) => {
           let isMatch = true;
           (params as ExampleObject[]).forEach((p, i) => {
-            if (p.value !== args[i]) { isMatch = false; }
+            const eq = _.isEqual(p.value, args[i]);
+            if (!eq) { isMatch = false; }
           });
           return isMatch;
         });
