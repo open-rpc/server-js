@@ -10,7 +10,8 @@ import { JSONRPCResponse } from "./server-transport";
 
 describe("WebSocket transport", () => {
 
-  it("can start an https server that works", async (done) => {
+  it("can start an https server that works", async () => {
+    expect.assertions(1);
     const simpleMathExample = await parseOpenRPCDocument(examples.simpleMath);
 
     const transport = new WebSocketTransport({
@@ -25,12 +26,13 @@ describe("WebSocket transport", () => {
     transport.start();
 
     const ws = new WebSocket("wss://localhost:9698", { rejectUnauthorized: false });
+    let done: any;
     const handleMessage = (data: string) => {
       ws.off("message", handleMessage);
       transport.stop();
       const { result } = JSON.parse(data);
       expect(result).toBe(4);
-      done();
+      setTimeout(done, 3500); // give ws 3.5 seconds to shutdown
     };
     const handleConnnect = () => {
       ws.off("open", handleConnnect);
@@ -42,10 +44,14 @@ describe("WebSocket transport", () => {
         params: [2, 2],
       }));
     };
-    ws.on("open", handleConnnect);
+    const prom = new Promise((resolve) => {
+      done = resolve;
+      ws.on("open", handleConnnect);
+    });
+    await prom;
   });
 
-  it("can start an https server that works", async (done) => {
+  it("can start an https server that works", async () => {
     const simpleMathExample = await parseOpenRPCDocument(examples.simpleMath);
 
     const transport = new WebSocketTransport({
@@ -58,12 +64,13 @@ describe("WebSocket transport", () => {
     transport.start();
 
     const ws = new WebSocket("ws://localhost:9698", { rejectUnauthorized: false });
+    let done: any;
     const handleMessage = (data: string) => {
       ws.off("message", handleMessage);
       transport.stop();
       const { result } = JSON.parse(data);
       expect(result).toBe(4);
-      done();
+      setTimeout(done, 3500); // give ws 3.5 seconds to shutdown
     };
     const handleConnnect = () => {
       ws.off("open", handleConnnect);
@@ -75,10 +82,13 @@ describe("WebSocket transport", () => {
         params: [2, 2],
       }));
     };
-    ws.on("open", handleConnnect);
+    await new Promise((resolve) => {
+      done = resolve;
+      ws.on("open", handleConnnect);
+    });
   });
 
-  it("works with batching", async (done) => {
+  it("works with batching", async () => {
     const simpleMathExample = await parseOpenRPCDocument(examples.simpleMath);
 
     const transport = new WebSocketTransport({
@@ -93,14 +103,14 @@ describe("WebSocket transport", () => {
     transport.start();
 
     const ws = new WebSocket("wss://localhost:9698", { rejectUnauthorized: false });
-
+    let done: any;
     const handleMessage = (data: string) => {
       ws.off("message", handleMessage);
       transport.stop();
       const result = JSON.parse(data) as JSONRPCResponse[];
       expect(result.map((r) => r.result)).toEqual([4, 8]);
       transport.removeRouter(router);
-      done();
+      setTimeout(done, 3500); // give ws 3.5 seconds to shutdown
     };
 
     const handleConnnect = () => {
@@ -121,6 +131,10 @@ describe("WebSocket transport", () => {
         },
       ]));
     };
-    ws.on("open", handleConnnect);
+
+    await new Promise((resolve) => {
+      done = resolve;
+      ws.on("open", handleConnnect);
+    });
   });
 });

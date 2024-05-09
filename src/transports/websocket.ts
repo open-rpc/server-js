@@ -59,6 +59,19 @@ export default class WebSocketServerTransport extends ServerTransport {
   }
 
   public stop() {
+    // First sweep, soft close
+    this.wss.clients.forEach((socket) => {
+      socket.close();
+    });
+    setTimeout(() => {
+      // Second sweep, hard close
+      // for everyone who's left
+      this.wss.clients.forEach((socket) => {
+        if ([socket.OPEN, socket.CLOSING].includes((socket as any).readyState)) {
+          socket.terminate();
+        }
+      });
+    }, 3000);
     this.wss.removeAllListeners();
     this.wss.close();
     this.server.close();
