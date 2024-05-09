@@ -2,7 +2,6 @@ import examples from "@open-rpc/examples";
 import { parseOpenRPCDocument } from "@open-rpc/schema-utils-js";
 import { Router } from "../router";
 import HTTPTransport from "./http";
-import fetch from "node-fetch";
 import { JSONRPCResponse } from "./server-transport";
 
 describe("http transport", () => {
@@ -35,7 +34,7 @@ describe("http transport", () => {
       }),
       headers: { "Content-Type": "application/json" },
       method: "post",
-    }).then((res) => res.json());
+    }).then((res) => res.json() as Promise<JSONRPCResponse>);
 
     expect(result).toBe(4);
   });
@@ -56,7 +55,7 @@ describe("http transport", () => {
       ]),
       headers: { "Content-Type": "application/json" },
       method: "post",
-    }).then((res) => res.json());
+    }).then((res) => res.json() as Promise<JSONRPCResponse[]>);
 
     const pluckedResult = result.map((r: JSONRPCResponse) => r.result);
     expect(pluckedResult).toEqual([4, 8]);

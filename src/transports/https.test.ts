@@ -1,7 +1,6 @@
 import examples from "@open-rpc/examples";
 import { parseOpenRPCDocument } from "@open-rpc/schema-utils-js";
 import { Router } from "../router";
-import fetch from "node-fetch";
 import * as fs from "fs";
 import { promisify } from "util";
 import HTTPSTransport from "./https";
@@ -11,9 +10,13 @@ import cors from "cors";
 import { json as jsonParser } from "body-parser";
 import { HandleFunction } from "connect";
 import { JSONRPCResponse } from "./server-transport";
+import { Agent } from 'undici';
 
-const agent = new https.Agent({ rejectUnauthorized: false });
-
+const agent = new Agent({
+  connect: {
+    rejectUnauthorized: false,
+  },
+}) as any;
 describe("https transport", () => {
   let transport: HTTPSTransport;
   beforeAll(async () => {
@@ -44,7 +47,7 @@ describe("https transport", () => {
 
   it("can start an https server that works", async () => {
     const { result } = await fetch("https://localhost:9697", {
-      agent,
+      dispatcher: agent,
       body: JSON.stringify({
         id: "0",
         jsonrpc: "2.0",
@@ -53,14 +56,14 @@ describe("https transport", () => {
       }),
       headers: { "Content-Type": "application/json" },
       method: "post",
-    }).then((res) => res.json());
+    }).then((res) => res.json() as Promise<JSONRPCResponse>);
 
     expect(result).toBe(4);
   });
 
   it("works with batching", async () => {
     const result = await fetch("https://localhost:9697", {
-      agent,
+      dispatcher: agent,
       body: JSON.stringify([
         {
           id: "0",
@@ -76,7 +79,7 @@ describe("https transport", () => {
       ]),
       headers: { "Content-Type": "application/json" },
       method: "post",
-    }).then((res) => res.json());
+    }).then((res) => res.json() as Promise<JSONRPCResponse[]>);
 
     const pluckedResult = result.map((r: JSONRPCResponse) => r.result);
     expect(pluckedResult).toEqual([4, 8]);
