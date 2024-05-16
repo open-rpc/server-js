@@ -75,4 +75,7 @@ export default class Server {
     this.transports.forEach((transport) => transport.start());
   }
 
+  public quit() {
+    this.transports.forEach((transport) => transport.stop());
+  }
 }
