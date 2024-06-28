@@ -10,4 +10,8 @@ describe("Server transport test", () => {
     expect(()=>new DummyTransport().start()).toThrowError()
   });
 
+  it("transport implementation throws without stop", async () => {
+    expect(()=>new DummyTransport().stop()).toThrowError()
+  });
+
 });
