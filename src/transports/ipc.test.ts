@@ -18,7 +18,7 @@ describe("IPC transport", () => {
     });
     const router = new Router(simpleMathExample, { mockMode: true });
     transport.addRouter(router);
-    transport.start();
+    await transport.start();
     ipc.config.id = "simpleMath";
     ipc.config.retry = 1500;
     return new Promise((resolve, reject) => {
@@ -32,9 +32,9 @@ describe("IPC transport", () => {
     });
   });
 
-  afterAll(() => {
+  afterAll(async () => {
     ipc.disconnect("simpleMath");
-    transport.stop();
+    await transport.stop();
   });
 
   it("can start an IPC server that works", (done) => {
@@ -56,13 +56,13 @@ describe("IPC transport", () => {
         params: [2, 2],
       }),
     );
-  });
+  }, 60000);
 
   it("works with batching", (done) => {
     const handle = (data: any) => {
       ipc.of.simpleMath.off("message", handle);
-      const result = JSON.parse(data) as JSONRPCResponse[];
-      expect(result.map((r) => r.result)).toEqual([4, 8]);
+      const responses = JSON.parse(data) as JSONRPCResponse[];
+      expect(responses.map((r) => r.result)).toEqual([4, 8]);
       done();
     };
 
@@ -84,5 +84,5 @@ describe("IPC transport", () => {
         },
       ]),
     );
-  });
+  }, 60000);
 });

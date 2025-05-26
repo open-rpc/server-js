@@ -31,9 +31,14 @@ export abstract class ServerTransport {
     this.routers = this.routers.filter((r) => r !== router);
   }
 
-  public start(): void {
+  public async start(): Promise<void> {
     console.warn("Transport must implement start()"); // tslint:disable-line
     throw new Error("Transport missing start implementation");
+  }
+
+  public async stop(): Promise<void> {
+    console.warn("Transport must implement stop()"); // tslint:disable-line
+    throw new Error("Transport missing stop implementation");
   }
 
   protected async routerHandler({ id, method, params }: JSONRPCRequest): Promise<JSONRPCResponse> {

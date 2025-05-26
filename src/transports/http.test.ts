@@ -3,6 +3,8 @@ import { parseOpenRPCDocument } from "@open-rpc/schema-utils-js";
 import { Router } from "../router";
 import HTTPTransport from "./http";
 import { JSONRPCResponse } from "./server-transport";
+import connect from "connect";
+import http from "http";
 
 describe("http transport", () => {
   let transport: HTTPTransport;
@@ -17,11 +19,11 @@ describe("http transport", () => {
 
     transport.addRouter(router);
 
-    transport.start();
+    await transport.start();
   });
 
-  afterAll(() => {
-    transport.stop();
+  afterAll(async () => {
+    await transport.stop();
   });
 
   it("can start an http server that works", async () => {
@@ -59,5 +61,85 @@ describe("http transport", () => {
 
     const pluckedResult = result.map((r: JSONRPCResponse) => r.result);
     expect(pluckedResult).toEqual([4, 8]);
+  });
+
+  it("allows using an existing app", async () => {
+    const app = connect();
+    const simpleMathExample = await parseOpenRPCDocument(examples.simpleMath);
+    const localTransport = new HTTPTransport({ middleware: [], port: 9700, app });
+    const router = new Router(simpleMathExample, { mockMode: true });
+    localTransport.addRouter(router);
+
+    try {
+      await localTransport.start();
+
+      const { result } = await fetch("http://localhost:9700", {
+        body: JSON.stringify({
+          id: "2",
+          jsonrpc: "2.0",
+          method: "addition",
+          params: [2, 2],
+        }),
+        headers: { "Content-Type": "application/json" },
+        method: "post",
+      }).then((res) => res.json() as Promise<JSONRPCResponse>);
+
+      expect(result).toBe(4);
+    } finally {
+      await localTransport.stop();
+    }
+  }, 30000);
+
+  it("handles errors when stopping the server", async () => {
+    const errorTransport = new HTTPTransport({
+      middleware: [],
+      port: 9703,
+    });
+    let serverInstance: any;
+    let originalCloseFn: ((callback?: (err?: Error) => void) => http.Server) | null = null;
+
+    try {
+      await errorTransport.start();
+      serverInstance = (errorTransport as any).server;
+      originalCloseFn = serverInstance.close.bind(serverInstance);
+
+      const mockError = new Error("Mock close error");
+      serverInstance.close = (callback: (err?: Error) => void) => {
+        callback(mockError);
+        originalCloseFn?.((_err?: Error) => { /* an actual close attempt */ });
+      };
+
+      await expect(errorTransport.stop()).rejects.toThrow("Mock close error");
+
+    } finally {
+      if (serverInstance && serverInstance.listening) {
+        // Restore original close method before attempting to stop for cleanup
+        if (originalCloseFn) {
+          serverInstance.close = originalCloseFn;
+        }
+        try {
+          await errorTransport.stop(); // Attempt to stop for cleanup
+        } catch (cleanupError) {
+          // Ignore cleanup errors if the main test assertion passed/failed as expected
+          console.warn("Error during test server cleanup (port 9703):", cleanupError);
+        }
+      }
+    }
+  });
+
+  it("handles errors when starting the server", async () => {
+    const errorTransport = new HTTPTransport({
+      middleware: [],
+      port: 9707,
+    });
+    const serverInstance = (errorTransport as any).server;
+    const originalListen = serverInstance.listen.bind(serverInstance);
+    serverInstance.listen = (port: number, cb: (err?: Error) => void) => {
+      cb(new Error("Mock listen error"));
+      return serverInstance;
+    };
+    await expect(errorTransport.start()).rejects.toThrow("Mock listen error");
+    serverInstance.listen = originalListen;
+    // Do not call stop, since server never started
   });
 });
