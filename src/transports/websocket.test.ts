@@ -206,4 +206,143 @@ describe("WebSocket transport", () => {
     await expect(transport.stop()).rejects.toThrow("Mock close error");
     serverInstance.close = originalClose;
   });
+
+  it("properly terminates sockets in OPEN state during stop", async () => {
+    // Create a transport without actually starting the server
+    const transport = new WebSocketTransport({
+      middleware: [],
+      port: 9707,
+    });
+    
+    // Create a mock WebSocket.Server with the necessary properties
+    const mockWss = {
+      clients: new Set(),
+      close: jest.fn((cb) => cb()),
+      removeAllListeners: jest.fn()
+    };
+    
+    // Replace the transport's WebSocket.Server with our mock
+    (transport as any).wss = mockWss;
+    
+    // Create a mock socket in OPEN state
+    const mockOpenSocket = {
+      close: jest.fn(),
+      terminate: jest.fn(),
+      OPEN: WebSocket.OPEN,
+      CLOSING: WebSocket.CLOSING,
+      readyState: WebSocket.OPEN
+    };
+    
+    // Add the mock socket to our clients collection
+    mockWss.clients.add(mockOpenSocket);
+    
+    // Replace the transport's server.close with a mock implementation
+    const mockServer = {
+      close: jest.fn((cb) => cb())
+    };
+    (transport as any).server = mockServer;
+    
+    // Call stop - this should invoke our mock implementations
+    await transport.stop();
+    
+    // Verify the socket was first closed softly and then terminated
+    expect(mockOpenSocket.close).toHaveBeenCalled();
+    expect(mockOpenSocket.terminate).toHaveBeenCalled();
+    expect(mockWss.removeAllListeners).toHaveBeenCalled();
+    expect(mockWss.close).toHaveBeenCalled();
+    expect(mockServer.close).toHaveBeenCalled();
+  });
+
+  it("properly terminates sockets in CLOSING state during stop", async () => {
+    // Create a transport without actually starting the server
+    const transport = new WebSocketTransport({
+      middleware: [],
+      port: 9708,
+    });
+    
+    // Create a mock WebSocket.Server with the necessary properties
+    const mockWss = {
+      clients: new Set(),
+      close: jest.fn((cb) => cb()),
+      removeAllListeners: jest.fn()
+    };
+    
+    // Replace the transport's WebSocket.Server with our mock
+    (transport as any).wss = mockWss;
+    
+    // Create a mock socket in CLOSING state
+    const mockClosingSocket = {
+      close: jest.fn(),
+      terminate: jest.fn(),
+      OPEN: WebSocket.OPEN,
+      CLOSING: WebSocket.CLOSING,
+      readyState: WebSocket.CLOSING
+    };
+    
+    // Add the mock socket to our clients collection
+    mockWss.clients.add(mockClosingSocket);
+    
+    // Replace the transport's server.close with a mock implementation
+    const mockServer = {
+      close: jest.fn((cb) => cb())
+    };
+    (transport as any).server = mockServer;
+    
+    // Call stop - this should invoke our mock implementations
+    await transport.stop();
+    
+    // Verify the socket was first closed softly and then terminated
+    expect(mockClosingSocket.close).toHaveBeenCalled();
+    expect(mockClosingSocket.terminate).toHaveBeenCalled();
+    expect(mockWss.removeAllListeners).toHaveBeenCalled();
+    expect(mockWss.close).toHaveBeenCalled();
+    expect(mockServer.close).toHaveBeenCalled();
+  });
+
+  it("does not terminate sockets that are already closed", async () => {
+    // Create a transport without actually starting the server
+    const transport = new WebSocketTransport({
+      middleware: [],
+      port: 9709,
+    });
+    
+    // Create a mock WebSocket.Server with the necessary properties
+    const mockWss = {
+      clients: new Set(),
+      close: jest.fn((cb) => cb()),
+      removeAllListeners: jest.fn()
+    };
+    
+    // Replace the transport's WebSocket.Server with our mock
+    (transport as any).wss = mockWss;
+    
+    // Create a mock socket in CLOSED state
+    const mockClosedSocket = {
+      close: jest.fn(),
+      terminate: jest.fn(),
+      OPEN: WebSocket.OPEN,
+      CLOSING: WebSocket.CLOSING,
+      CLOSED: WebSocket.CLOSED,
+      readyState: WebSocket.CLOSED
+    };
+    
+    // Add the mock socket to our clients collection
+    mockWss.clients.add(mockClosedSocket);
+    
+    // Replace the transport's server.close with a mock implementation
+    const mockServer = {
+      close: jest.fn((cb) => cb())
+    };
+    (transport as any).server = mockServer;
+    
+    // Call stop - this should invoke our mock implementations
+    await transport.stop();
+    
+    // Verify close was called but terminate was not
+    expect(mockClosedSocket.close).toHaveBeenCalled();
+    expect(mockClosedSocket.terminate).not.toHaveBeenCalled();
+    expect(mockWss.removeAllListeners).toHaveBeenCalled();
+    expect(mockWss.close).toHaveBeenCalled();
+    expect(mockServer.close).toHaveBeenCalled();
+  });
 });
