@@ -12,6 +12,7 @@ export interface WebSocketServerTransportOptions extends SecureServerOptions {
   cors?: cors.CorsOptions;
   allowHTTP1?: boolean;
   app?: ConnectApp;
+  timeout?: number = 3000;
 }
 
 export default class WebSocketServerTransport extends ServerTransport {
