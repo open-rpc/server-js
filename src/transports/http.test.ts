@@ -157,7 +157,8 @@ describe("http transport", () => {
       ],
     } as any;
     const mapping = {
-      getCustom: async function(this: any): Promise<any> { return this.req.customProp; }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      getCustom: async function(): Promise<any> { return (this as any).req.customProp; }
     };
     const router = new Router(minimalDoc, mapping);
     transport.addRouter(router);
