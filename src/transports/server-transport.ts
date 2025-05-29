@@ -41,7 +41,8 @@ export abstract class ServerTransport {
     throw new Error("Transport missing stop implementation");
   }
 
-  protected async routerHandler({ id, method, params }: JSONRPCRequest): Promise<JSONRPCResponse> {
+  protected async routerHandler(request: JSONRPCRequest, context?: any): Promise<JSONRPCResponse> {
+    const { id, method, params } = request;
     if (this.routers.length === 0) {
       console.warn("transport method called without a router configured."); // tslint:disable-line
       throw new Error("No router configured");
@@ -61,9 +62,10 @@ export abstract class ServerTransport {
         ...Router.methodNotFoundHandler(method)
       };
     } else {
+      // forward context when invoking the method
       res = {
         ...res,
-        ...await routerForMethod.call(method, params)
+        ...await (routerForMethod as any).call(method, params, context)
       };
     }
 

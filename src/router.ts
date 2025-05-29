@@ -68,7 +68,7 @@ export class Router {
     this.methodCallValidator = new MethodCallValidator(openrpcDocument);
   }
 
-  public async call(methodName: string, params: any) {
+  public async call(methodName: string, params: any, context?: any) {
     const validationErrors = this.methodCallValidator.validate(methodName, params);
 
     if (validationErrors instanceof MethodNotFoundError) {
@@ -84,7 +84,8 @@ export class Router {
     const paramsAsArray = params instanceof Array ? params : toArray(methodObject, params);
 
     try {
-      return { result: await this.methods[methodName](...paramsAsArray) };
+      const result = await this.methods[methodName].apply(context, paramsAsArray);
+      return { result };
     } catch (e) {
       if (e instanceof JSONRPCError) {
         return { error: { code: e.code, message: e.message, data: e.data } };
