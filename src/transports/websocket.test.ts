@@ -345,4 +345,21 @@ describe("WebSocket transport", () => {
     expect(mockWss.close).toHaveBeenCalled();
     expect(mockServer.close).toHaveBeenCalled();
   });
+
+  it("applies default timeout when none provided", () => {
+    const transport = new WebSocketTransport({
+      middleware: [],
+      port: 9710,
+    });
+    expect((transport as any).options.timeout).toBe(3000);
+  });
+
+  it("respects provided timeout", () => {
+    const transport = new WebSocketTransport({
+      middleware: [],
+      port: 9711,
+      timeout: 5000,
+    });
+    expect((transport as any).options.timeout).toBe(5000);
+  });
 });

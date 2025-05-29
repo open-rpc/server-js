@@ -12,7 +12,7 @@ export interface WebSocketServerTransportOptions extends SecureServerOptions {
   cors?: cors.CorsOptions;
   allowHTTP1?: boolean;
   app?: ConnectApp;
-  timeout?: number = 3000;
+  timeout?: number;
 }
 
 export default class WebSocketServerTransport extends ServerTransport {
@@ -22,6 +22,8 @@ export default class WebSocketServerTransport extends ServerTransport {
 
   constructor(private options: WebSocketServerTransportOptions) {
     super();
+    // Ensure a default timeout if none provided
+    options.timeout = options.timeout ?? 3000;
     options.allowHTTP1 = true;
 
     const app = options.app || connect();
