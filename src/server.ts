@@ -71,8 +71,16 @@ export default class Server {
     this.transports.forEach((transport) => transport.removeRouter(routerToRemove));
   }
 
-  public start() {
-    this.transports.forEach((transport) => transport.start());
+  public async start() {
+    for (const transport of this.transports) {
+      await transport.start();
+    }
+  }
+
+  public async stop() {
+    for (const transport of this.transports) {
+      await transport.stop();
+    }
   }
 
 }

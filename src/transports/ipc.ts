@@ -44,12 +44,16 @@ export default class IPCServerTransport extends ServerTransport {
     this.server = ipc.server;
   }
 
-  public start() {
+  public async start(): Promise<void> {
     this.server.start(this.options.port);
+    // node-ipc is sync, but yield to event loop to ensure server is ready
+    await new Promise((resolve) => setImmediate(resolve));
   }
 
-  public stop() {
+  public async stop(): Promise<void> {
     this.server.stop();
+    // node-ipc is sync, but yield to event loop to ensure server is stopped
+    await new Promise((resolve) => setImmediate(resolve));
   }
 
   private async ipcRouterHandler(req: any, respondWith: any) {

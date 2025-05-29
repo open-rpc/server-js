@@ -1,6 +1,6 @@
 import cors from "cors";
 import { json as jsonParser } from "body-parser";
-import connect, { HandleFunction } from "connect";
+import connect, { HandleFunction, Server as ConnectApp } from "connect";
 import http, { ServerOptions } from "http";
 import ServerTransport, { JSONRPCRequest } from "./server-transport";
 
@@ -8,6 +8,7 @@ export interface HTTPServerTransportOptions extends ServerOptions {
   middleware: HandleFunction[];
   port: number;
   cors?: cors.CorsOptions;
+  app?: ConnectApp;
 }
 
 export default class HTTPServerTransport extends ServerTransport {
@@ -17,11 +18,12 @@ export default class HTTPServerTransport extends ServerTransport {
 
   constructor(options: HTTPServerTransportOptions) {
     super();
-    const app = connect();
+    const app = options.app || connect();
 
     const corsOptions = options.cors || HTTPServerTransport.defaultCorsOptions;
     this.options = {
       ...options,
+      app,
       middleware: [
         cors(corsOptions) as HandleFunction,
         jsonParser({
@@ -38,12 +40,24 @@ export default class HTTPServerTransport extends ServerTransport {
     this.server = http.createServer(app);
   }
 
-  public start(): void {
-    this.server.listen(this.options.port);
+  public async start(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.server.listen(this.options.port, (err?: Error) => {
+        if (err) return reject(err);
+        resolve();
+      });
+    });
   }
 
-  public stop(): void {
-    this.server.close();
+  public async stop(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.server.close((err?: Error) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve();
+      });
+    });
   }
 
   private async httpRouterHandler(req: any, res: any): Promise<void> {

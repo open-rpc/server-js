@@ -1,6 +1,6 @@
 import cors from "cors";
 import { json as jsonParser } from "body-parser";
-import connect, { HandleFunction } from "connect";
+import connect, { HandleFunction, Server as ConnectApp } from "connect";
 import http2, { Http2SecureServer, SecureServerOptions } from "http2";
 import ServerTransport, { JSONRPCRequest } from "./server-transport";
 
@@ -9,6 +9,7 @@ export interface HTTPSServerTransportOptions extends SecureServerOptions {
   port: number;
   cors?: cors.CorsOptions;
   allowHTTP1?: boolean;
+  app?: ConnectApp;
 }
 
 export default class HTTPSServerTransport extends ServerTransport {
@@ -19,11 +20,12 @@ export default class HTTPSServerTransport extends ServerTransport {
     super();
     options.allowHTTP1 = true;
 
-    const app = connect();
+    const app = options.app || connect();
 
     const corsOptions = options.cors || HTTPSServerTransport.defaultCorsOptions;
     this.options = {
       ...options,
+      app,
       middleware: [
         cors(corsOptions) as HandleFunction,
         jsonParser({
@@ -38,12 +40,22 @@ export default class HTTPSServerTransport extends ServerTransport {
     this.server = http2.createSecureServer(options, (req: any, res: any) => app(req, res));
   }
 
-  public start(): void {
-    this.server.listen(this.options.port);
+  public async start(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.server.listen(this.options.port, (err?: Error) => {
+        if (err) return reject(err);
+        resolve();
+      });
+    });
   }
 
-  public stop(): void {
-    this.server.close();
+  public async stop(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.server.close((err?: Error) => {
+        if (err) return reject(err);
+        resolve();
+      });
+    });
   }
 
   private async httpsRouterHandler(req: any, res: any): Promise<void> {

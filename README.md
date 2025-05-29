@@ -153,10 +153,14 @@ const UdpIpcTransport = new IPCServerTranport(UDPIPCTransportOptions);
 
 ```
 import { HTTPServerTransport, HTTPSServerTransport } from "@open-rpc/server-js";
+import express from "express";
+
+const existingApp = express();
 
 const httpOptions = {
   middleware: [ cors({ origin: "*" }) ],
-  port: 4345
+  port: 4345,
+  app: existingApp, // optional existing express/connect app
 };
 const httpsOptions = { // extends https://nodejs.org/api/https.html#https_https_createserver_options_requestlistener
   middleware: [ cors({ origin: "*" }) ],

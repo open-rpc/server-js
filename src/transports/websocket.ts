@@ -1,6 +1,6 @@
 import cors from "cors";
 import { json as jsonParser } from "body-parser";
-import connect, { HandleFunction } from "connect";
+import connect, { HandleFunction, Server as ConnectApp } from "connect";
 import http2, { Http2SecureServer, SecureServerOptions } from "http2";
 import http from "http";
 import ServerTransport, { JSONRPCRequest } from "./server-transport";
@@ -11,6 +11,8 @@ export interface WebSocketServerTransportOptions extends SecureServerOptions {
   port: number;
   cors?: cors.CorsOptions;
   allowHTTP1?: boolean;
+  app?: ConnectApp;
+  timeout?: number;
 }
 
 export default class WebSocketServerTransport extends ServerTransport {
@@ -20,13 +22,16 @@ export default class WebSocketServerTransport extends ServerTransport {
 
   constructor(private options: WebSocketServerTransportOptions) {
     super();
+    // Ensure a default timeout if none provided
+    options.timeout = options.timeout ?? 3000;
     options.allowHTTP1 = true;
 
-    const app = connect();
+    const app = options.app || connect();
 
     const corsOptions = options.cors || WebSocketServerTransport.defaultCorsOptions;
     this.options = {
       ...options,
+      app,
       middleware: [
         cors(corsOptions) as HandleFunction,
         jsonParser({
@@ -54,27 +59,35 @@ export default class WebSocketServerTransport extends ServerTransport {
     });
   }
 
-  public start() {
-    this.server.listen(this.options.port);
+  public async start(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.server.listen(this.options.port, (err?: Error) => {
+        if (err) return reject(err);
+        resolve();
+      });
+    });
   }
 
-  public stop() {
+  public async stop(): Promise<void> {
     // First sweep, soft close
     this.wss.clients.forEach((socket) => {
       socket.close();
     });
-    setTimeout(() => {
-      // Second sweep, hard close
-      // for everyone who's left
-      this.wss.clients.forEach((socket) => {
-        if ([socket.OPEN, socket.CLOSING].includes((socket as any).readyState)) {
-          socket.terminate();
-        }
-      });
-    }, 3000);
+    // Wait for sockets to close, then hard close any remaining
+    await new Promise((resolve) => setTimeout(resolve, this.options.timeout));
+    this.wss.clients.forEach((socket) => {
+      if ([socket.OPEN, socket.CLOSING].includes((socket as any).readyState)) {
+        socket.terminate();
+      }
+    });
     this.wss.removeAllListeners();
-    this.wss.close();
-    this.server.close();
+    await new Promise<void>((resolve) => this.wss.close(() => resolve()));
+    await new Promise<void>((resolve, reject) => {
+      this.server.close((err?: Error) => {
+        if (err) return reject(err);
+        resolve();
+      });
+    });
   }
 
   private async webSocketRouterHandler(req: any, respondWith: any) {
