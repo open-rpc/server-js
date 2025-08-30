@@ -84,6 +84,14 @@ describe("router", () => {
           expect((error as JSONRPCErrorObject).code).toBe(-32601);
         });
 
+        it("returns not found error when method is not implemented", async () => {
+          const methodMapping = makeMethodMapping(parsedExample.methods as MethodObject[]);
+          delete methodMapping["addition"];
+          const router = new Router(parsedExample, methodMapping);
+          const { error } = await router.call("addition", [2, 2]);
+          expect((error as JSONRPCErrorObject).code).toBe(-32601);
+        });
+
         it("returns param validation error when passing incorrect params", async () => {
           const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods as MethodObject[]));
           const { error } = await router.call("addition", ["123", "321"]);
@@ -101,8 +109,9 @@ describe("router", () => {
         it("returns Unknown Error data when thrown", async () => {
           const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods as MethodObject[]));
           const { error } = await router.call("unknown-error", []);
-          expect((error as JSONRPCErrorObject).code).toBe(6969);
-          expect((error as JSONRPCErrorObject).message).toBe("unknown error");
+          expect((error as JSONRPCErrorObject).code).toBe(-32603);
+          expect((error as JSONRPCErrorObject).message).toBe("Internal error");
+          expect((error as JSONRPCErrorObject).data).toBe("unanticpated crash");
         });
 
         it("implements service discovery", async () => {
