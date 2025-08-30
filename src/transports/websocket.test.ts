@@ -346,6 +346,38 @@ describe("WebSocket transport", () => {
     expect(mockServer.close).toHaveBeenCalled();
   });
 
+  it("unrefs the stop timeout so the event loop can exit", async () => {
+    const transport = new WebSocketTransport({
+      middleware: [],
+      port: 9712,
+    });
+
+    const mockWss = {
+      clients: new Set(),
+      close: jest.fn((cb) => cb()),
+      removeAllListeners: jest.fn(),
+    } as any;
+    (transport as any).wss = mockWss;
+
+    const mockServer = {
+      close: jest.fn((cb) => cb()),
+    } as any;
+    (transport as any).server = mockServer;
+
+    const unref = jest.fn();
+    const originalSetTimeout = global.setTimeout;
+    (global as any).setTimeout = (fn: (...args: any[]) => void, _ms?: number) => {
+      fn();
+      return { unref } as any;
+    };
+
+    await transport.stop();
+
+    expect(unref).toHaveBeenCalled();
+
+    (global as any).setTimeout = originalSetTimeout;
+  });
+
   it("applies default timeout when none provided", () => {
     const transport = new WebSocketTransport({
       middleware: [],
