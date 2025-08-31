@@ -59,12 +59,28 @@ export default class HTTPSServerTransport extends ServerTransport {
   }
 
   private async httpsRouterHandler(req: any, res: any): Promise<void> {
-    let result = null;
     if (req.body instanceof Array) {
-      result = await Promise.all(req.body.map((r: JSONRPCRequest) => super.routerHandler(r)));
-    } else {
-      result = await super.routerHandler(req.body);
+      const result = (await Promise.all(req.body.map((r: JSONRPCRequest) => super.routerHandler(r))))
+        .filter((r) => r !== undefined);
+
+      if (result.length === 0) {
+        res.statusCode = 204;
+        res.end();
+        return;
+      }
+
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify(result));
+      return;
     }
+
+    const result = await super.routerHandler(req.body);
+    if (result === undefined) {
+      res.statusCode = 204;
+      res.end();
+      return;
+    }
+
     res.setHeader("Content-Type", "application/json");
     res.end(JSON.stringify(result));
   }

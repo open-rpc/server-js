@@ -1,4 +1,4 @@
-import ServerTransport from "./server-transport";
+import ServerTransport, { JSONRPCResponse } from "./server-transport";
 
 describe("Server transport test", () => {
 
@@ -21,7 +21,7 @@ describe("Server transport test", () => {
     // Mock a router that doesn't implement any method
     const fakeRouter = { isMethodImplemented: () => false, call: jest.fn() } as unknown as import("../router").Router;
     t.addRouter(fakeRouter);
-    const result = await t['routerHandler']({ jsonrpc: "2.0", id: "1", method: "foo", params: [] });
+    const result = await t['routerHandler']({ jsonrpc: "2.0", id: "1", method: "foo", params: [] }) as JSONRPCResponse;
     expect(result.error).toBeDefined();
     expect(result.error?.code).toBe(-32601); // Method not found
   });
@@ -33,8 +33,29 @@ describe("Server transport test", () => {
       call: async () => ({ result: 42 }),
     } as unknown as import("../router").Router;
     t.addRouter(fakeRouter);
-    const result = await t['routerHandler']({ jsonrpc: "2.0", id: "1", method: "bar", params: [] });
+    const result = await t['routerHandler']({ jsonrpc: "2.0", id: "1", method: "bar", params: [] }) as JSONRPCResponse;
     expect(result.result).toBe(42);
+  });
+
+  it("returns undefined for notifications", async () => {
+    const t = new DummyTransport();
+    const fakeRouter = {
+      isMethodImplemented: () => true,
+      call: jest.fn().mockResolvedValue({ result: 0 }),
+    } as unknown as import("../router").Router;
+    t.addRouter(fakeRouter);
+    const result = await t['routerHandler']({ jsonrpc: "2.0", method: "notify", params: [] });
+    expect(result).toBeUndefined();
+    expect(fakeRouter.call).toHaveBeenCalled();
+  });
+
+  it("returns undefined for notifications with unknown method", async () => {
+    const t = new DummyTransport();
+    const fakeRouter = { isMethodImplemented: () => false, call: jest.fn() } as unknown as import("../router").Router;
+    t.addRouter(fakeRouter);
+    const result = await t['routerHandler']({ jsonrpc: "2.0", method: "foo", params: [] });
+    expect(result).toBeUndefined();
+    expect(fakeRouter.call).not.toHaveBeenCalled();
   });
 
   it("covers the no router configured branch in routerHandler", async () => {
