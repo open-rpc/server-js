@@ -10,7 +10,7 @@ export interface JSONRPCRequest {
 export interface JSONRPCErrorObject {
   code: number;
   message: string;
-  data: any;
+  data?: any;
 }
 
 export interface JSONRPCResponse {
@@ -41,7 +41,7 @@ export abstract class ServerTransport {
     throw new Error("Transport missing stop implementation");
   }
 
-  protected async routerHandler({ id, method, params }: JSONRPCRequest): Promise<JSONRPCResponse> {
+  protected async routerHandler({ id, method, params }: JSONRPCRequest): Promise<JSONRPCResponse | void> {
     if (this.routers.length === 0) {
       console.warn("transport method called without a router configured."); // tslint:disable-line
       throw new Error("No router configured");
@@ -49,7 +49,15 @@ export abstract class ServerTransport {
 
     const routerForMethod = this.routers.find((r) => r.isMethodImplemented(method));
 
-    let res = {
+    // Notifications (id is undefined) must not yield a response
+    if (id === undefined) {
+      if (routerForMethod !== undefined) {
+        await routerForMethod.call(method, params);
+      }
+      return;
+    }
+
+    let res: JSONRPCResponse = {
       id,
       jsonrpc: "2.0",
     };

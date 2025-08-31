@@ -91,12 +91,23 @@ export default class WebSocketServerTransport extends ServerTransport {
   }
 
   private async webSocketRouterHandler(req: any, respondWith: any) {
-    let result = null;
     if (req instanceof Array) {
-      result = await Promise.all(req.map((r: JSONRPCRequest) => super.routerHandler(r)));
-    } else {
-      result = await super.routerHandler(req);
+      const result = (await Promise.all(req.map((r: JSONRPCRequest) => super.routerHandler(r))))
+        .filter((r) => r !== undefined);
+
+      if (result.length === 0) {
+        return;
+      }
+
+      respondWith(JSON.stringify(result));
+      return;
     }
+
+    const result = await super.routerHandler(req);
+    if (result === undefined) {
+      return;
+    }
+
     respondWith(JSON.stringify(result));
   }
 }
