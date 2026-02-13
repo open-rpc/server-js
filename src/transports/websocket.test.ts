@@ -371,4 +371,231 @@ describe("WebSocket transport", () => {
     });
     expect((transport as any).options.timeout).toBe(5000);
   });
+
+  it("passes a client proxy into method handlers", async () => {
+    const simpleMathExample = await parseOpenRPCDocument(examples.simpleMath);
+    (simpleMathExample.methods as any[]).push({
+      name: "notify",
+      params: [{ name: "value", schema: { type: "integer" } }],
+      result: { name: "notified", schema: { type: "integer" } },
+      "x-implementedBy": ["client"],
+    });
+
+    const transport = new WebSocketTransport({
+      middleware: [],
+      port: 9712,
+    });
+
+    const router = new Router(simpleMathExample, {
+      addition: async (a: number, b: number, client: { notify: (value: number) => Promise<number> }) => {
+        return client.notify(a + b);
+      },
+      subtraction: async (a: number, b: number) => a - b,
+      notify: async () => 0,
+    });
+
+    transport.addRouter(router);
+    await transport.start();
+
+    const ws = new WebSocket("ws://localhost:9712");
+
+    await new Promise<void>((resolve, reject) => {
+      ws.on("message", (raw: WebSocket.Data) => {
+        const payload = JSON.parse(raw.toString());
+        if (payload.method === "notify") {
+          ws.send(JSON.stringify({
+            id: payload.id,
+            jsonrpc: "2.0",
+            result: payload.params[0] * 2,
+          }));
+          return;
+        }
+
+        expect(payload.result).toBe(8);
+        resolve();
+      });
+      ws.on("error", reject);
+      ws.on("open", () => {
+        ws.send(JSON.stringify({
+          id: "invoke-addition",
+          jsonrpc: "2.0",
+          method: "addition",
+          params: [2, 2],
+        }));
+      });
+    });
+
+    ws.close();
+    await transport.stop();
+  });
+
+  it("runs outboundHandler with connected clients", async () => {
+    const simpleMathExample = await parseOpenRPCDocument(examples.simpleMath);
+    (simpleMathExample.methods as any[]).push({
+      name: "notify",
+      params: [{ name: "value", schema: { type: "integer" } }],
+      result: { name: "notified", schema: { type: "integer" } },
+      "x-implementedBy": ["client"],
+    });
+
+    let hasSentNotify = false;
+    const outboundHandler = jest.fn(async (clients) => {
+      if (clients.length === 0 || hasSentNotify) {
+        return;
+      }
+      hasSentNotify = true;
+      await clients[0].methods.notify(10);
+    });
+
+    const transport = new WebSocketTransport({
+      middleware: [],
+      port: 9713,
+      outboundHandler,
+      outboundIntervalMs: 50,
+    });
+
+    const router = new Router(simpleMathExample, {
+      addition: async (a: number, b: number) => a + b,
+      subtraction: async (a: number, b: number) => a - b,
+      notify: async () => 0,
+    });
+
+    transport.addRouter(router);
+    await transport.start();
+
+    const ws = new WebSocket("ws://localhost:9713");
+    await new Promise<void>((resolve, reject) => {
+      ws.on("message", (raw: WebSocket.Data) => {
+        const payload = JSON.parse(raw.toString());
+        if (payload.method === "notify") {
+          ws.send(JSON.stringify({
+            id: payload.id,
+            jsonrpc: "2.0",
+            result: payload.params[0],
+          }));
+          resolve();
+        }
+      });
+      ws.on("error", reject);
+    });
+
+    expect(outboundHandler).toHaveBeenCalled();
+    ws.close();
+    await transport.stop();
+  });
+
+
+  it("rejects handler client proxy calls when client returns JSON-RPC error", async () => {
+    const simpleMathExample = await parseOpenRPCDocument(examples.simpleMath);
+    (simpleMathExample.methods as any[]).push({
+      name: "notify",
+      params: [{ name: "value", schema: { type: "integer" } }],
+      result: { name: "notified", schema: { type: "integer" } },
+      "x-implementedBy": ["client"],
+    });
+
+    const transport = new WebSocketTransport({
+      middleware: [],
+      port: 9714,
+    });
+
+    const router = new Router(simpleMathExample, {
+      addition: async (a: number, b: number, client: { notify: (value: number) => Promise<number> }) => {
+        return client.notify(a + b);
+      },
+      subtraction: async (a: number, b: number) => a - b,
+      notify: async () => 0,
+    });
+
+    transport.addRouter(router);
+    await transport.start();
+
+    const ws = new WebSocket("ws://localhost:9714");
+
+    await new Promise<void>((resolve, reject) => {
+      ws.on("message", (raw: WebSocket.Data) => {
+        const payload = JSON.parse(raw.toString());
+        if (payload.method === "notify") {
+          ws.send(JSON.stringify({
+            id: payload.id,
+            jsonrpc: "2.0",
+            error: {
+              code: 1234,
+              message: "client side failure",
+              data: { reason: "boom" },
+            },
+          }));
+          return;
+        }
+
+        expect(payload.error).toBeDefined();
+        expect(payload.error.code).toBe(6969);
+        resolve();
+      });
+      ws.on("error", reject);
+      ws.on("open", () => {
+        ws.send(JSON.stringify({
+          id: "invoke-addition-error",
+          jsonrpc: "2.0",
+          method: "addition",
+          params: [2, 2],
+        }));
+      });
+    });
+
+    ws.close();
+    await transport.stop();
+  });
+
+  it("cleans up pending client requests when socket closes", async () => {
+    const transport = new WebSocketTransport({
+      middleware: [],
+      port: 9715,
+    });
+
+    const reject = jest.fn();
+    const resolve = jest.fn();
+    const mockSocket = {
+      removeAllListeners: jest.fn(),
+    };
+
+    (transport as any).pendingClientRequests.set("request-1", {
+      socket: mockSocket,
+      reject,
+      resolve,
+    });
+    (transport as any).clientDetails.set(mockSocket, { id: "client-1", methods: {} });
+
+    (transport as any).handleClientClose(mockSocket);
+
+    expect(mockSocket.removeAllListeners).toHaveBeenCalled();
+    expect(reject).toHaveBeenCalledWith(new Error("WebSocket connection closed"));
+    expect((transport as any).pendingClientRequests.size).toBe(0);
+    expect((transport as any).clientDetails.size).toBe(0);
+  });
+
+  it("does not resolve pending client requests when response id is missing", () => {
+    const transport = new WebSocketTransport({
+      middleware: [],
+      port: 9716,
+    });
+
+    const reject = jest.fn();
+    const resolve = jest.fn();
+    (transport as any).pendingClientRequests.set("request-2", {
+      socket: {},
+      reject,
+      resolve,
+    });
+
+    (transport as any).resolvePendingClientRequest({
+      jsonrpc: "2.0",
+      result: "ok",
+    });
+
+    expect(resolve).not.toHaveBeenCalled();
+    expect(reject).not.toHaveBeenCalled();
+    expect((transport as any).pendingClientRequests.size).toBe(1);
+  });
+
 });
