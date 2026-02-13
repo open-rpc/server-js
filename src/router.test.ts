@@ -144,6 +144,46 @@ describe("router", () => {
           const { result } = await router.call("addition", [6, 2]);
           expect(typeof result).toBe("number");
         });
+        it("does not expose x-implementedBy client methods as inbound server methods", async () => {
+          const exampleWithClientMethod = _.cloneDeep(parsedExample);
+          const additionMethod = (exampleWithClientMethod.methods as MethodObject[]).find((method) => method.name === "addition") as MethodObject;
+          (additionMethod as MethodObject & { [key: string]: unknown })["x-implementedBy"] = ["client"];
+          const router = new Router(exampleWithClientMethod, makeMethodMapping(exampleWithClientMethod.methods as MethodObject[]));
+          const { error } = await router.call("addition", [2, 2]);
+          expect((error as JSONRPCErrorObject).code).toBe(-32601);
+        });
+
+        it("reports methods implemented by a given participant", async () => {
+          const exampleWithClientMethod = _.cloneDeep(parsedExample);
+          const methods = exampleWithClientMethod.methods as MethodObject[];
+          const additionMethod = methods.find((method) => method.name === "addition") as MethodObject;
+          const subtractionMethod = methods.find((method) => method.name === "subtraction") as MethodObject;
+          (additionMethod as MethodObject & { [key: string]: unknown })["x-implementedBy"] = ["client"];
+          (subtractionMethod as MethodObject & { [key: string]: unknown })["x-implementedBy"] = ["server", "client"];
+
+          const router = new Router(exampleWithClientMethod, makeMethodMapping(methods));
+          expect(router.getMethodsImplementedBy("client")).toEqual(expect.arrayContaining(["addition", "subtraction"]));
+          expect(router.getMethodsImplementedBy("server")).toContain("subtraction");
+        });
+
+
+        it("defaults x-implementedBy to server when extension is omitted", async () => {
+          const exampleWithoutExtension = _.cloneDeep(parsedExample);
+          const additionMethod = (exampleWithoutExtension.methods as MethodObject[])
+            .find((method) => method.name === "addition") as MethodObject;
+          delete (additionMethod as MethodObject & { [key: string]: unknown })["x-implementedBy"];
+
+          const router = new Router(exampleWithoutExtension, makeMethodMapping(exampleWithoutExtension.methods as MethodObject[]));
+          expect(router.isMethodImplemented("addition")).toBe(true);
+          const { result } = await router.call("addition", [2, 2]);
+          expect(result).toBe(4);
+        });
+
+        it("does not include rpc.discover in participant method listings", () => {
+          const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods as MethodObject[]));
+          expect(router.getMethodsImplementedBy("server")).not.toContain("rpc.discover");
+        });
+
       }
 
     });

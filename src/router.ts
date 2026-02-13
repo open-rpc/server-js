@@ -54,6 +54,28 @@ export class Router {
   private methods: MethodMapping;
   private methodCallValidator: MethodCallValidator;
 
+  private getMethodObject(methodName: string): MethodObject | undefined {
+    return (this.openrpcDocument.methods as MethodObject[]).find((m) => m.name === methodName);
+  }
+
+  private getImplementedBy(methodName: string): string[] {
+    const methodObject = this.getMethodObject(methodName);
+    if (!methodObject) {
+      return [];
+    }
+
+    const implementedBy = (methodObject as MethodObject & { [key: string]: unknown })["x-implementedBy"];
+    if (implementedBy === undefined) {
+      return ["server"];
+    }
+
+    if (implementedBy instanceof Array) {
+      return implementedBy.filter((role): role is string => typeof role === "string");
+    }
+
+    return [];
+  }
+
   constructor(
     private openrpcDocument: OpenrpcDocument,
     methodMapping: MethodMapping | MockModeSettings,
@@ -68,7 +90,11 @@ export class Router {
     this.methodCallValidator = new MethodCallValidator(openrpcDocument);
   }
 
-  public async call(methodName: string, params: any) {
+  public async call(methodName: string, params: any, context?: { client?: unknown }) {
+    if (!this.getImplementedBy(methodName).includes("server") && methodName !== "rpc.discover") {
+      return Router.methodNotFoundHandler(methodName);
+    }
+
     const validationErrors = this.methodCallValidator.validate(methodName, params);
 
     if (validationErrors instanceof MethodNotFoundError) {
@@ -79,11 +105,14 @@ export class Router {
       return this.invalidParamsHandler(validationErrors);
     }
 
-    const methodObject = (this.openrpcDocument.methods as MethodObject[]).find((m) => m.name === methodName) as MethodObject;
+    const methodObject = this.getMethodObject(methodName) as MethodObject;
 
     const paramsAsArray = params instanceof Array ? params : toArray(methodObject, params);
 
     try {
+      if (context && context.client !== undefined) {
+        return { result: await this.methods[methodName](...paramsAsArray, context.client) };
+      }
       return { result: await this.methods[methodName](...paramsAsArray) };
     } catch (e) {
       if (e instanceof JSONRPCError) {
@@ -94,7 +123,14 @@ export class Router {
   }
 
   public isMethodImplemented(methodName: string): boolean {
-    return this.methods[methodName] !== undefined;
+    return this.methods[methodName] !== undefined && this.getImplementedBy(methodName).includes("server");
+  }
+
+  public getMethodsImplementedBy(participant: string): string[] {
+    return (this.openrpcDocument.methods as MethodObject[])
+      .filter((method) => this.getImplementedBy(method.name).includes(participant))
+      .map((method) => method.name)
+      .filter((methodName) => methodName !== "rpc.discover");
   }
 
   private serviceDiscoveryHandler(): Promise<OpenrpcDocument> {
