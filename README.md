@@ -190,6 +190,47 @@ const wsFromHttpsTransport = new WebSocketServerTransport(webSocketFromHttpsOpti
 const wsTransport = new WebSocketServerTransport(webSocketOptions); // Accepts http transport as well.
 ```
 
+###### Bidirectional `x-implementedBy` example
+
+This repository includes a minimal server/client pair that demonstrates:
+- server-only methods (`"x-implementedBy": ["server"]`)
+- client-only methods (`"x-implementedBy": ["client"]`)
+- methods implemented by both (`"x-implementedBy": ["server", "client"]`)
+
+Run in separate terminals:
+
+```bash
+npm run example:bidirectional:server
+```
+
+```bash
+npm run example:bidirectional:client
+```
+
+Example sources:
+- `src/examples/bidirectional/openrpc.ts`
+- `src/examples/bidirectional/server.ts`
+- `src/examples/bidirectional/client.ts`
+
+###### `outboundHandler` example
+
+This repository also includes a minimal `outboundHandler` example where the server
+proactively calls connected client methods on an interval.
+
+Run in separate terminals:
+
+```bash
+npm run example:outbound:server
+```
+
+```bash
+npm run example:outbound:client
+```
+
+Example sources:
+- `src/examples/bidirectional/server-outbound.ts`
+- `src/examples/bidirectional/client-outbound.ts`
+
 ###### Add components as you go
 ```
 const server = new Server();
