@@ -127,13 +127,8 @@ export class Router {
     this.plugins = options.plugins || [];
   }
 
-<<<<<<< Updated upstream
-  public async call(methodName: string, params: any, context?: { client?: unknown }) {
-    if (!this.getImplementedBy(methodName).includes("server") && methodName !== "rpc.discover") {
-=======
   public async call(methodName: string, params: any, context?: RouterCallContext) {
     if (!this.isMethodImplemented(methodName, context)) {
->>>>>>> Stashed changes
       return Router.methodNotFoundHandler(methodName);
     }
 
@@ -152,11 +147,7 @@ export class Router {
     let paramsAsArray = params instanceof Array ? params : toArray(methodObject, params);
 
     try {
-<<<<<<< Updated upstream
-      if (context && context.client !== undefined) {
-        return { result: await this.methods[methodName](...paramsAsArray, context.client) };
-      }
-=======
+      let paramsMappedByPlugin = false;
       for (const plugin of this.plugins) {
         if (!plugin.mapHandlerParams) {
           continue;
@@ -174,10 +165,14 @@ export class Router {
 
         if (mappedParams !== undefined) {
           paramsAsArray = mappedParams;
+          paramsMappedByPlugin = true;
         }
       }
 
->>>>>>> Stashed changes
+      if (!paramsMappedByPlugin && context && context.client !== undefined) {
+        paramsAsArray = [...paramsAsArray, context.client];
+      }
+
       return { result: await this.methods[methodName](...paramsAsArray) };
     } catch (e) {
       if (e instanceof JSONRPCError) {
@@ -187,23 +182,16 @@ export class Router {
     }
   }
 
-<<<<<<< Updated upstream
-  public isMethodImplemented(methodName: string): boolean {
-    return this.methods[methodName] !== undefined && this.getImplementedBy(methodName).includes("server");
-  }
-
-  public getMethodsImplementedBy(participant: string): string[] {
-    return (this.openrpcDocument.methods as MethodObject[])
-      .filter((method) => this.getImplementedBy(method.name).includes(participant))
-      .map((method) => method.name)
-      .filter((methodName) => methodName !== "rpc.discover");
-=======
   public isMethodImplemented(methodName: string, context?: RouterCallContext): boolean {
     const methodObject = (this.openrpcDocument.methods as MethodObject[]).find((m) => m.name === methodName);
     const hasLocalHandler = this.methods[methodName] !== undefined;
 
     if (!hasLocalHandler) {
       return false;
+    }
+
+    if (methodName === "rpc.discover") {
+      return true;
     }
 
     for (const plugin of this.plugins) {
@@ -222,7 +210,14 @@ export class Router {
       }
     }
 
-    return true;
+    return this.getImplementedBy(methodName).includes("server");
+  }
+
+  public getMethodsImplementedBy(participant: string): string[] {
+    return (this.openrpcDocument.methods as MethodObject[])
+      .filter((method) => this.getImplementedBy(method.name).includes(participant))
+      .map((method) => method.name)
+      .filter((methodName) => methodName !== "rpc.discover");
   }
 
   public getAvailableMethods(context?: RouterCallContext): string[] {
@@ -246,8 +241,7 @@ export class Router {
     return methods
       .map((method) => method.name)
       .filter((methodName) => methodName !== "rpc.discover")
-      .filter((methodName) => this.isMethodImplemented(methodName));
->>>>>>> Stashed changes
+      .filter((methodName) => this.isMethodImplemented(methodName, context));
   }
 
   private serviceDiscoveryHandler(): Promise<OpenrpcDocument> {

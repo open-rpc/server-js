@@ -73,7 +73,6 @@ export default class WebSocketServerTransport extends ServerTransport {
     this.wss = new WebSocket.Server({ server: this.server as any });
 
     this.wss.on("connection", (ws: WebSocket) => {
-<<<<<<< Updated upstream
       const client = {
         id: `client-${this.nextClientId++}`,
         methods: this.buildClientMethodsProxy(ws),
@@ -84,13 +83,6 @@ export default class WebSocketServerTransport extends ServerTransport {
         void this.handleWebSocketMessage(message, ws);
       });
       ws.on("close", () => this.handleClientClose(ws));
-=======
-      ws.on(
-        "message",
-        (message: string) => this.webSocketRouterHandler(JSON.parse(message), ws, ws.send.bind(ws)),
-      );
-      ws.on("close", () => ws.removeAllListeners());
->>>>>>> Stashed changes
     });
   }
 
@@ -143,7 +135,6 @@ export default class WebSocketServerTransport extends ServerTransport {
     });
   }
 
-<<<<<<< Updated upstream
   private handleClientClose(ws: WebSocket) {
     ws.removeAllListeners();
     this.clientDetails.delete(ws);
@@ -188,14 +179,6 @@ export default class WebSocketServerTransport extends ServerTransport {
         ws.send(JSON.stringify(filteredResponses));
       }
       return;
-=======
-  private async webSocketRouterHandler(req: any, ws: WebSocket, respondWith: any) {
-    let result = null;
-    if (req instanceof Array) {
-      result = await Promise.all(req.map((r: JSONRPCRequest) => super.routerHandler(r, { client: ws })));
-    } else {
-      result = await super.routerHandler(req, { client: ws });
->>>>>>> Stashed changes
     }
 
     const response = await this.routePayload(payload, ws);
