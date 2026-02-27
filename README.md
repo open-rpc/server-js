@@ -134,6 +134,28 @@ const router = new Router(openrpcDocument, methodHandlerMapping);
 const router = new Router(openrpcDocument, { mockMode: true });
 ```
 
+###### router plugins (`x-implementedBy` + client context)
+
+```typescript
+import { Router, plugins } from "@open-rpc/server-js";
+
+const router = new Router(openrpcDocument, methodHandlerMapping, {
+  plugins: [plugins.implementedByPlugin()],
+});
+```
+
+You can also pass `routerOptions` through `Server`:
+
+```typescript
+const server = new Server({
+  openrpcDocument,
+  methodMapping,
+  routerOptions: {
+    plugins: [plugins.implementedByPlugin()],
+  },
+});
+```
+
 ##### Creating Transports
 
 ###### IPC
@@ -189,6 +211,47 @@ const webSocketOptions = { // extends https://github.com/websockets/ws/blob/mast
 const wsFromHttpsTransport = new WebSocketServerTransport(webSocketFromHttpsOptions); // Accepts http transport as well.
 const wsTransport = new WebSocketServerTransport(webSocketOptions); // Accepts http transport as well.
 ```
+
+###### Bidirectional `x-implementedBy` example
+
+This repository includes a minimal server/client pair that demonstrates:
+- server-only methods (`"x-implementedBy": ["server"]`)
+- client-only methods (`"x-implementedBy": ["client"]`)
+- methods implemented by both (`"x-implementedBy": ["server", "client"]`)
+
+Run in separate terminals:
+
+```bash
+npm run example:bidirectional:server
+```
+
+```bash
+npm run example:bidirectional:client
+```
+
+Example sources:
+- `src/examples/bidirectional/openrpc.ts`
+- `src/examples/bidirectional/server.ts`
+- `src/examples/bidirectional/client.ts`
+
+###### `outboundHandler` example
+
+This repository also includes a minimal `outboundHandler` example where the server
+proactively calls connected client methods on an interval.
+
+Run in separate terminals:
+
+```bash
+npm run example:outbound:server
+```
+
+```bash
+npm run example:outbound:client
+```
+
+Example sources:
+- `src/examples/bidirectional/server-outbound.ts`
+- `src/examples/bidirectional/client-outbound.ts`
 
 ###### Add components as you go
 ```
