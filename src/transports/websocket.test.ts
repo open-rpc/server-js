@@ -195,7 +195,7 @@ describe("WebSocket transport", () => {
   it("handles errors when stopping the server (WebSocket)", async () => {
     const transport = new WebSocketTransport({
       middleware: [],
-      port: 9706,
+      port: 0,
     });
     await transport.start();
     const serverInstance = (transport as any).server;
@@ -203,8 +203,17 @@ describe("WebSocket transport", () => {
     serverInstance.close = (cb: (err?: Error) => void) => {
       cb(new Error("Mock close error"));
     };
-    await expect(transport.stop()).rejects.toThrow("Mock close error");
-    serverInstance.close = originalClose;
+    try {
+      await expect(transport.stop()).rejects.toThrow("Mock close error");
+    } finally {
+      serverInstance.close = originalClose;
+      await new Promise<void>((resolve, reject) => {
+        serverInstance.close((err?: Error) => {
+          if (err) return reject(err);
+          resolve();
+        });
+      });
+    }
   });
 
   it("properly terminates sockets in OPEN state during stop", async () => {
