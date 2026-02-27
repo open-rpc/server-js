@@ -1,4 +1,4 @@
-import { Router, MethodMapping } from "./router";
+import { Router, MethodMapping, RouterOptions } from "./router";
 import { OpenrpcDocument as OpenRPC } from "@open-rpc/meta-schema";
 import Transports, {ServerTransport, TransportOptions, TransportClasses, TransportNames } from "./transports";
 
@@ -15,6 +15,7 @@ export interface ServerOptions {
   openrpcDocument: OpenRPC;
   transportConfigs?: TransportConfig[];
   methodMapping?: MethodMapping | MockModeOptions;
+  routerOptions?: RouterOptions;
 }
 
 export default class Server {
@@ -26,6 +27,7 @@ export default class Server {
       this.addRouter(
         options.openrpcDocument,
         options.methodMapping,
+        options.routerOptions,
       );
     }
 
@@ -57,8 +59,8 @@ export default class Server {
     this.addTransport(transport);
   }
 
-  public addRouter(openrpcDocument: OpenRPC, methodMapping: MethodMapping | MockModeOptions) {
-    const router = new Router(openrpcDocument, methodMapping);
+  public addRouter(openrpcDocument: OpenRPC, methodMapping: MethodMapping | MockModeOptions, routerOptions?: RouterOptions) {
+    const router = new Router(openrpcDocument, methodMapping, routerOptions);
 
     this.routers.push(router);
     this.transports.forEach((transport) => transport.addRouter(router));

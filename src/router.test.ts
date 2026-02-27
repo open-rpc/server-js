@@ -11,6 +11,7 @@ import {
 } from "@open-rpc/meta-schema";
 import { JSONRPCError } from "./error";
 import { JSONRPCErrorObject } from "./transports/server-transport";
+import { implementedByPlugin } from "./plugins";
 
 const jsf = require("json-schema-faker"); // eslint-disable-line
 
@@ -144,23 +145,45 @@ describe("router", () => {
           const { result } = await router.call("addition", [6, 2]);
           expect(typeof result).toBe("number");
         });
+<<<<<<< Updated upstream
         it("does not expose x-implementedBy client methods as inbound server methods", async () => {
           const exampleWithClientMethod = _.cloneDeep(parsedExample);
           const additionMethod = (exampleWithClientMethod.methods as MethodObject[]).find((method) => method.name === "addition") as MethodObject;
           (additionMethod as MethodObject & { [key: string]: unknown })["x-implementedBy"] = ["client"];
           const router = new Router(exampleWithClientMethod, makeMethodMapping(exampleWithClientMethod.methods as MethodObject[]));
+=======
+
+        it("plugin blocks methods not implemented by server", async () => {
+          const exampleWithClientMethod = _.cloneDeep(parsedExample);
+          const additionMethod = (exampleWithClientMethod.methods as MethodObject[])
+            .find((method) => method.name === "addition") as MethodObject;
+          (additionMethod as MethodObject & { [key: string]: unknown })["x-implementedBy"] = ["client"];
+
+          const router = new Router(
+            exampleWithClientMethod,
+            makeMethodMapping(exampleWithClientMethod.methods as MethodObject[]),
+            { plugins: [implementedByPlugin()] },
+          );
+>>>>>>> Stashed changes
           const { error } = await router.call("addition", [2, 2]);
           expect((error as JSONRPCErrorObject).code).toBe(-32601);
         });
 
+<<<<<<< Updated upstream
         it("reports methods implemented by a given participant", async () => {
           const exampleWithClientMethod = _.cloneDeep(parsedExample);
           const methods = exampleWithClientMethod.methods as MethodObject[];
+=======
+        it("plugin reports available methods using plugin context", () => {
+          const exampleWithRoles = _.cloneDeep(parsedExample);
+          const methods = exampleWithRoles.methods as MethodObject[];
+>>>>>>> Stashed changes
           const additionMethod = methods.find((method) => method.name === "addition") as MethodObject;
           const subtractionMethod = methods.find((method) => method.name === "subtraction") as MethodObject;
           (additionMethod as MethodObject & { [key: string]: unknown })["x-implementedBy"] = ["client"];
           (subtractionMethod as MethodObject & { [key: string]: unknown })["x-implementedBy"] = ["server", "client"];
 
+<<<<<<< Updated upstream
           const router = new Router(exampleWithClientMethod, makeMethodMapping(methods));
           expect(router.getMethodsImplementedBy("client")).toEqual(expect.arrayContaining(["addition", "subtraction"]));
           expect(router.getMethodsImplementedBy("server")).toContain("subtraction");
@@ -184,6 +207,35 @@ describe("router", () => {
           expect(router.getMethodsImplementedBy("server")).not.toContain("rpc.discover");
         });
 
+=======
+          const router = new Router(
+            exampleWithRoles,
+            makeMethodMapping(methods),
+            { plugins: [implementedByPlugin()] },
+          );
+          expect(router.getAvailableMethods({ participant: "client" })).toEqual(expect.arrayContaining(["addition", "subtraction"]));
+          expect(router.getAvailableMethods({ participant: "server" })).toContain("subtraction");
+          expect(router.getAvailableMethods({ participant: "server" })).not.toContain("addition");
+        });
+
+        it("plugin appends context client as final method arg", async () => {
+          const expectedClient = { id: "client-1" };
+          const exampleForContext = _.cloneDeep(parsedExample);
+          const methodMapping = makeMethodMapping(exampleForContext.methods as MethodObject[]);
+          methodMapping.addition = async (a: number, b: number, client: unknown) => {
+            expect(client).toBe(expectedClient);
+            return a + b;
+          };
+
+          const router = new Router(
+            exampleForContext,
+            methodMapping,
+            { plugins: [implementedByPlugin()] },
+          );
+          const { result } = await router.call("addition", [2, 2], { client: expectedClient });
+          expect(result).toBe(4);
+        });
+>>>>>>> Stashed changes
       }
 
     });
