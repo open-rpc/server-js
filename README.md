@@ -134,6 +134,28 @@ const router = new Router(openrpcDocument, methodHandlerMapping);
 const router = new Router(openrpcDocument, { mockMode: true });
 ```
 
+###### router plugins (`x-implementedBy` + client context)
+
+```typescript
+import { Router, plugins } from "@open-rpc/server-js";
+
+const router = new Router(openrpcDocument, methodHandlerMapping, {
+  plugins: [plugins.implementedByPlugin()],
+});
+```
+
+You can also pass `routerOptions` through `Server`:
+
+```typescript
+const server = new Server({
+  openrpcDocument,
+  methodMapping,
+  routerOptions: {
+    plugins: [plugins.implementedByPlugin()],
+  },
+});
+```
+
 ##### Creating Transports
 
 ###### IPC

@@ -54,7 +54,7 @@ describe('Server', () => {
     const server = new Server({ openrpcDocument: {} as any, methodMapping: mapping });
     
     // Verify Router was created with expected args
-    expect(require('./router').Router).toHaveBeenCalledWith({} as any, mapping);
+    expect(require('./router').Router).toHaveBeenCalledWith({} as any, mapping, undefined);
     expect((server as any).routers).toHaveLength(1);
     
     // Restore original Router
@@ -136,11 +136,26 @@ describe('Server', () => {
     
     const router = server.addRouter({} as any, {} as any);
     
-    expect(require('./router').Router).toHaveBeenCalledWith({}, {} as any);
+    expect(require('./router').Router).toHaveBeenCalledWith({}, {} as any, undefined);
     expect(transport.addRouter).toHaveBeenCalledWith(router);
     expect((server as any).routers).toContain(router);
     
     // Restore original Router
+    require('./router').Router = originalRouter;
+  });
+
+  it('passes router options into addRouter and constructor path', () => {
+    const originalRouter = require('./router').Router;
+    const mockRouter = createTestRouter();
+    require('./router').Router = jest.fn().mockReturnValue(mockRouter);
+
+    const routerOptions = { plugins: [{ name: "test-plugin" }] } as any;
+    const server = new Server({ openrpcDocument: {} as any, methodMapping: {} as any, routerOptions });
+    server.addRouter({} as any, {} as any, routerOptions);
+
+    expect(require('./router').Router).toHaveBeenNthCalledWith(1, {} as any, {} as any, routerOptions);
+    expect(require('./router').Router).toHaveBeenNthCalledWith(2, {} as any, {} as any, routerOptions);
+
     require('./router').Router = originalRouter;
   });
 
