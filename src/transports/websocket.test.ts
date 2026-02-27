@@ -378,7 +378,7 @@ describe("WebSocket transport", () => {
       name: "notify",
       params: [{ name: "value", schema: { type: "integer" } }],
       result: { name: "notified", schema: { type: "integer" } },
-      "x-implementedBy": ["client"],
+      "x-implemented-by": ["client"],
     });
 
     const transport = new WebSocketTransport({
@@ -435,7 +435,7 @@ describe("WebSocket transport", () => {
       name: "notify",
       params: [{ name: "value", schema: { type: "integer" } }],
       result: { name: "notified", schema: { type: "integer" } },
-      "x-implementedBy": ["client"],
+      "x-implemented-by": ["client"],
     });
 
     let hasSentNotify = false;
@@ -491,7 +491,7 @@ describe("WebSocket transport", () => {
       name: "notify",
       params: [{ name: "value", schema: { type: "integer" } }],
       result: { name: "notified", schema: { type: "integer" } },
-      "x-implementedBy": ["client"],
+      "x-implemented-by": ["client"],
     });
 
     const transport = new WebSocketTransport({

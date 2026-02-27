@@ -22,19 +22,19 @@ describe("websocket integration", () => {
             { name: "b", schema: { type: "number" } },
           ],
           result: { name: "sum", schema: { type: "number" } },
-          "x-implementedBy": ["server"],
+          "x-implemented-by": ["server"],
         },
         {
           name: "clientDouble",
           params: [{ name: "value", schema: { type: "number" } }],
           result: { name: "doubled", schema: { type: "number" } },
-          "x-implementedBy": ["client"],
+          "x-implemented-by": ["client"],
         },
         {
           name: "callClientDouble",
           params: [{ name: "value", schema: { type: "number" } }],
           result: { name: "result", schema: { type: "number" } },
-          "x-implementedBy": ["server"],
+          "x-implemented-by": ["server"],
         },
       ],
     })) as OpenRPC;

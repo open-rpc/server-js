@@ -6,7 +6,7 @@ const getImplementedBy = (methodObject?: MethodObject): string[] => {
     return [];
   }
 
-  const implementedBy = (methodObject as MethodObject & { [key: string]: unknown })["x-implementedBy"];
+  const implementedBy = (methodObject as MethodObject & { [key: string]: unknown })["x-implemented-by"];
   if (implementedBy === undefined) {
     return ["server"];
   }
