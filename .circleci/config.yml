@@ -28,7 +28,7 @@ aliases:
 defaults: &defaults
   working_directory: ~/server-js
   docker:
-    - image: cimg/node:20.12.1
+    - image: cimg/node:22
 jobs:
   test:
     <<: *defaults
