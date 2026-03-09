@@ -21,7 +21,11 @@
     "watch:build": "tsc --watch",
     "watch:test": "jest --watch",
     "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix"
+    "lint:fix": "eslint . --ext .ts --fix",
+    "example:bidirectional:server": "npm run build && node build/examples/bidirectional/server.js",
+    "example:bidirectional:client": "npm run build && node build/examples/bidirectional/client.js",
+    "example:outbound:server": "npm run build && node build/examples/bidirectional/server-outbound.js",
+    "example:outbound:client": "npm run build && node build/examples/bidirectional/client-outbound.js"
   },
   "author": "",
   "license": "Apache-2.0",

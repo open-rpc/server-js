@@ -37,6 +37,22 @@ describe("Server transport test", () => {
     expect(result.result).toBe(42);
   });
 
+  it("passes context into router selection and call", async () => {
+    const t = new DummyTransport();
+    const ctx = { client: { id: "ctx-client" } };
+    const isMethodImplemented = jest.fn().mockReturnValue(true);
+    const call = jest.fn().mockResolvedValue({ result: 42 });
+    const fakeRouter = {
+      isMethodImplemented,
+      call,
+    } as unknown as import("../router").Router;
+
+    t.addRouter(fakeRouter);
+    await t['routerHandler']({ jsonrpc: "2.0", id: "2", method: "bar", params: [] }, ctx);
+    expect(isMethodImplemented).toHaveBeenCalledWith("bar", ctx);
+    expect(call).toHaveBeenCalledWith("bar", [], ctx);
+  });
+
   it("covers the no router configured branch in routerHandler", async () => {
     class DummyTransport extends ServerTransport {}
     const t = new DummyTransport();
