@@ -134,6 +134,27 @@ const router = new Router(openrpcDocument, methodHandlerMapping);
 const router = new Router(openrpcDocument, { mockMode: true });
 ```
 
+###### `x-implemented-by` (bidirectional calls)
+
+`Router` natively understands the OpenRPC `x-implemented-by` extension:
+
+- Methods default to `["server"]` when the extension is omitted.
+- Methods tagged with `["client"]` (or both) are excluded from inbound server routing.
+- `router.getMethodsImplementedBy("client")` returns the client-handled method list.
+- When a `client` proxy is provided via the transport context (WebSocket does this automatically), it is appended as the final handler argument so server logic can call client methods directly.
+
+```typescript
+const router = new Router(openrpcDocument, {
+  addition: async (a: number, b: number, client?: { notify: (value: number) => Promise<void> }) => {
+    if (client) {
+      await client.notify(a + b);
+    }
+    return a + b;
+  },
+  notify: async () => undefined,
+});
+```
+
 ##### Creating Transports
 
 ###### IPC
@@ -189,6 +210,47 @@ const webSocketOptions = { // extends https://github.com/websockets/ws/blob/mast
 const wsFromHttpsTransport = new WebSocketServerTransport(webSocketFromHttpsOptions); // Accepts http transport as well.
 const wsTransport = new WebSocketServerTransport(webSocketOptions); // Accepts http transport as well.
 ```
+
+###### Bidirectional `x-implementedBy` example
+
+This repository includes a minimal server/client pair that demonstrates:
+- server-only methods (`"x-implementedBy": ["server"]`)
+- client-only methods (`"x-implementedBy": ["client"]`)
+- methods implemented by both (`"x-implementedBy": ["server", "client"]`)
+
+Run in separate terminals:
+
+```bash
+npm run example:bidirectional:server
+```
+
+```bash
+npm run example:bidirectional:client
+```
+
+Example sources:
+- `src/examples/bidirectional/openrpc.ts`
+- `src/examples/bidirectional/server.ts`
+- `src/examples/bidirectional/client.ts`
+
+###### `outboundHandler` example
+
+This repository also includes a minimal `outboundHandler` example where the server
+proactively calls connected client methods on an interval.
+
+Run in separate terminals:
+
+```bash
+npm run example:outbound:server
+```
+
+```bash
+npm run example:outbound:client
+```
+
+Example sources:
+- `src/examples/bidirectional/server-outbound.ts`
+- `src/examples/bidirectional/client-outbound.ts`
 
 ###### Add components as you go
 ```

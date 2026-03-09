@@ -144,6 +144,75 @@ describe("router", () => {
           const { result } = await router.call("addition", [6, 2]);
           expect(typeof result).toBe("number");
         });
+
+        it("does not expose x-implemented-by client methods as inbound server methods", async () => {
+          const exampleWithClientMethod = _.cloneDeep(parsedExample);
+          const additionMethod = (exampleWithClientMethod.methods as MethodObject[])
+            .find((method) => method.name === "addition") as MethodObject;
+          (additionMethod as MethodObject & { [key: string]: unknown })["x-implemented-by"] = ["client"];
+          const router = new Router(exampleWithClientMethod, makeMethodMapping(exampleWithClientMethod.methods as MethodObject[]));
+          const { error } = await router.call("addition", [2, 2]);
+          expect((error as JSONRPCErrorObject).code).toBe(-32601);
+        });
+
+        it("reports methods implemented by a given participant", async () => {
+          const exampleWithClientMethod = _.cloneDeep(parsedExample);
+          const methods = exampleWithClientMethod.methods as MethodObject[];
+          const additionMethod = methods.find((method) => method.name === "addition") as MethodObject;
+          const subtractionMethod = methods.find((method) => method.name === "subtraction") as MethodObject;
+          (additionMethod as MethodObject & { [key: string]: unknown })["x-implemented-by"] = ["client"];
+          (subtractionMethod as MethodObject & { [key: string]: unknown })["x-implemented-by"] = ["server", "client"];
+
+          const router = new Router(exampleWithClientMethod, makeMethodMapping(methods));
+          expect(router.getMethodsImplementedBy("client")).toEqual(expect.arrayContaining(["addition", "subtraction"]));
+          expect(router.getMethodsImplementedBy("server")).toContain("subtraction");
+        });
+
+        it("defaults x-implemented-by to server when extension is omitted", async () => {
+          const exampleWithoutExtension = _.cloneDeep(parsedExample);
+          const additionMethod = (exampleWithoutExtension.methods as MethodObject[])
+            .find((method) => method.name === "addition") as MethodObject;
+          delete (additionMethod as MethodObject & { [key: string]: unknown })["x-implemented-by"];
+
+          const router = new Router(exampleWithoutExtension, makeMethodMapping(exampleWithoutExtension.methods as MethodObject[]));
+          expect(router.isMethodImplemented("addition")).toBe(true);
+          const { result } = await router.call("addition", [2, 2]);
+          expect(result).toBe(4);
+        });
+
+        it("does not include rpc.discover in participant method listings", () => {
+          const router = new Router(parsedExample, makeMethodMapping(parsedExample.methods as MethodObject[]));
+          expect(router.getMethodsImplementedBy("server")).not.toContain("rpc.discover");
+        });
+
+        it("getAvailableMethods respects participant context", () => {
+          const exampleWithRoles = _.cloneDeep(parsedExample);
+          const methods = exampleWithRoles.methods as MethodObject[];
+          const additionMethod = methods.find((method) => method.name === "addition") as MethodObject;
+          const subtractionMethod = methods.find((method) => method.name === "subtraction") as MethodObject;
+          (additionMethod as MethodObject & { [key: string]: unknown })["x-implemented-by"] = ["client"];
+          (subtractionMethod as MethodObject & { [key: string]: unknown })["x-implemented-by"] = ["server", "client"];
+
+          const router = new Router(exampleWithRoles, makeMethodMapping(methods));
+          expect(router.getAvailableMethods({ participant: "client" })).toEqual(expect.arrayContaining(["addition", "subtraction"]));
+          expect(router.getAvailableMethods({ participant: "server" })).toContain("subtraction");
+          expect(router.getAvailableMethods({ participant: "server" })).not.toContain("addition");
+        });
+
+        it("appends context client as final method arg", async () => {
+          const expectedClient = { id: "client-1" };
+          const exampleForContext = _.cloneDeep(parsedExample);
+          const methodMapping = makeMethodMapping(exampleForContext.methods as MethodObject[]);
+          methodMapping.addition = async (a: number, b: number, client: unknown) => {
+            expect(client).toBe(expectedClient);
+            return a + b;
+          };
+
+          const router = new Router(exampleForContext, methodMapping);
+          const { result } = await router.call("addition", [2, 2], { client: expectedClient });
+          expect(result).toBe(4);
+        });
+
       }
 
     });
