@@ -51,10 +51,21 @@ export default class WebSocketServerTransport extends ServerTransport {
     this.wss = new WebSocket.Server({ server: this.server as any });
 
     this.wss.on("connection", (ws: WebSocket) => {
-      ws.on(
-        "message",
-        (message: string) => this.webSocketRouterHandler(JSON.parse(message), ws.send.bind(ws)),
-      );
+      ws.on("message", (message: WebSocket.RawData) => {
+        try {
+          const parsed = JSON.parse(typeof message === "string" ? message : message.toString());
+          void this.webSocketRouterHandler(parsed, ws.send.bind(ws));
+        } catch (err) {
+          ws.send(JSON.stringify({
+            jsonrpc: "2.0",
+            id: null,
+            error: {
+              code: -32700,
+              message: "Parse error",
+            },
+          }));
+        }
+      });
       ws.on("close", () => ws.removeAllListeners());
     });
   }

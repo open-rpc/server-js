@@ -355,6 +355,35 @@ describe("WebSocket transport", () => {
     expect(mockServer.close).toHaveBeenCalled();
   });
 
+  it("returns a parse error for invalid JSON and stays alive", async () => {
+    const simpleMathExample = await parseOpenRPCDocument(examples.simpleMath);
+    const transport = new WebSocketTransport({
+      middleware: [],
+      port: 9712,
+    });
+    const router = new Router(simpleMathExample, { mockMode: true });
+    transport.addRouter(router);
+    await transport.start();
+
+    const ws = new WebSocket("ws://localhost:9712");
+
+    await new Promise<void>((resolve, reject) => {
+      ws.on("message", (raw: WebSocket.Data) => {
+        const payload = JSON.parse(raw.toString());
+        expect(payload.error).toEqual({ code: -32700, message: "Parse error" });
+        expect(payload.id).toBeNull();
+        resolve();
+      });
+      ws.on("error", reject);
+      ws.on("open", () => {
+        ws.send("this is not json");
+      });
+    });
+
+    ws.close();
+    await transport.stop();
+  });
+
   it("applies default timeout when none provided", () => {
     const transport = new WebSocketTransport({
       middleware: [],
