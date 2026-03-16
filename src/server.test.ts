@@ -186,4 +186,35 @@ describe('Server', () => {
     
     expect(transport.stop).toHaveBeenCalled();
   });
+
+  it('rolls back started transports if a later transport fails to start', async () => {
+    const server = new Server({ openrpcDocument: {} as any });
+
+    const first = createTestTransport();
+    const second = createTestTransport();
+    const error = new Error('boom');
+
+    first.start.mockResolvedValue(undefined);
+    second.start.mockRejectedValue(error);
+
+    (server as any).transports = [first, second];
+
+    await expect(server.start()).rejects.toThrow('boom');
+    expect(first.stop).toHaveBeenCalled();
+    expect(second.stop).not.toHaveBeenCalled();
+  });
+
+  it('continues stopping transports when one fails', async () => {
+    const server = new Server({ openrpcDocument: {} as any });
+
+    const first = createTestTransport();
+    const second = createTestTransport();
+    first.stop.mockRejectedValue(new Error('fail'));
+    second.stop.mockResolvedValue(undefined);
+
+    (server as any).transports = [first, second];
+
+    await expect(server.stop()).rejects.toThrow('fail');
+    expect(second.stop).toHaveBeenCalled();
+  });
 });

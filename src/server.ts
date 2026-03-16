@@ -72,14 +72,36 @@ export default class Server {
   }
 
   public async start() {
-    for (const transport of this.transports) {
-      await transport.start();
+    const started: typeof this.transports = [];
+    try {
+      for (const transport of this.transports) {
+        await transport.start();
+        started.push(transport);
+      }
+    } catch (e) {
+      for (const transport of started.reverse()) {
+        try {
+          await transport.stop();
+        } catch (_) {
+          // ignore rollback errors
+        }
+      }
+      throw e;
     }
   }
 
   public async stop() {
+    const errors: Error[] = [];
     for (const transport of this.transports) {
-      await transport.stop();
+      try {
+        await transport.stop();
+      } catch (err) {
+        errors.push(err as Error);
+      }
+    }
+    if (errors.length > 0) {
+      const message = errors.map((err) => err.message).join('; ');
+      throw new Error(`Failed to stop transports: ${message}`);
     }
   }
 
