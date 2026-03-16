@@ -79,6 +79,10 @@ export class Router {
       return this.invalidParamsHandler(validationErrors);
     }
 
+    if (!this.isMethodImplemented(methodName)) {
+      return Router.methodNotFoundHandler(methodName);
+    }
+
     const methodObject = (this.openrpcDocument.methods as MethodObject[]).find((m) => m.name === methodName) as MethodObject;
 
     const paramsAsArray = params instanceof Array ? params : toArray(methodObject, params);
@@ -89,7 +93,8 @@ export class Router {
       if (e instanceof JSONRPCError) {
         return { error: { code: e.code, message: e.message, data: e.data } };
       }
-      return { error: { code: 6969, message: "unknown error" } };
+      const message = e instanceof Error ? e.message : String(e);
+      return { error: { code: -32603, message: "Internal error", data: message } };
     }
   }
 
