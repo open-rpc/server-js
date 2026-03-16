@@ -57,11 +57,15 @@ export default class IPCServerTransport extends ServerTransport {
   }
 
   private async ipcRouterHandler(req: any, respondWith: any) {
+    // bind req and respondWith as context for method calls
+    const context = { req, respondWith };
     let result = null;
     if (req instanceof Array) {
-      result = await Promise.all(req.map((jsonrpcReq: JSONRPCRequest) => super.routerHandler(jsonrpcReq)));
+      result = await Promise.all(
+        req.map((jsonrpcReq: JSONRPCRequest) => super.routerHandler(jsonrpcReq, context)),
+      );
     } else {
-      result = await super.routerHandler(req);
+      result = await super.routerHandler(req, context);
     }
     respondWith(JSON.stringify(result));
   }

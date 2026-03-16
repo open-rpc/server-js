@@ -142,4 +142,36 @@ describe("http transport", () => {
     serverInstance.listen = originalListen;
     // Do not call stop, since server never started
   });
+
+  it("binds req and res as the this context for methods", async () => {
+    // create an app that attaches customProp to req
+    const app = connect();
+    app.use((req: any, res: any, next: any) => { req.customProp = 'hello'; next(); });
+    // set up transport and router with a method that returns this.req.customProp
+    const transport = new HTTPTransport({ middleware: [], port: 9710, app });
+    const minimalDoc = {
+      openrpc: '1.2.6',
+      info: { title: 'test', version: '1.0.0' },
+      methods: [
+        { name: 'getCustom', params: [], result: { name: 'custom', schema: { type: 'string' } } }
+      ],
+    } as any;
+    const mapping = {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      getCustom: async function(): Promise<any> { return (this as any).req.customProp; }
+    };
+    const router = new Router(minimalDoc, mapping);
+    transport.addRouter(router);
+    await transport.start();
+    try {
+      const { result } = await fetch('http://localhost:9710', {
+        body: JSON.stringify({ id: 'foo', jsonrpc: '2.0', method: 'getCustom', params: [] }),
+        headers: { 'Content-Type': 'application/json' },
+        method: 'post',
+      }).then((res) => res.json() as Promise<JSONRPCResponse>);
+      expect(result).toBe('hello');
+    } finally {
+      await transport.stop();
+    }
+  });
 });
