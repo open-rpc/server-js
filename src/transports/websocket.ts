@@ -74,7 +74,10 @@ export default class WebSocketServerTransport extends ServerTransport {
       socket.close();
     });
     // Wait for sockets to close, then hard close any remaining
-    await new Promise((resolve) => setTimeout(resolve, this.options.timeout));
+    await new Promise((resolve) => {
+      // unref timer so it doesn't keep the event loop alive
+      setTimeout(resolve, this.options.timeout).unref();
+    });
     this.wss.clients.forEach((socket) => {
       if ([socket.OPEN, socket.CLOSING].includes((socket as any).readyState)) {
         socket.terminate();
